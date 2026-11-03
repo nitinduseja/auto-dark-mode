@@ -1,0 +1,47 @@
+# Node & Frontend dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+dist-ssr/
+release/
+*.local
+
+# Rust & Cargo artifacts
+target/
+src-tauri/target/
+src-tauri/crates/*/target/
+**/*.rs.bk
+Cargo.lock.orig
+
+# Tauri generated files
+src-tauri/gen/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# OS & Editor files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
+
+# Environment variables & local config
+.env
+.env.*
+!.env.example

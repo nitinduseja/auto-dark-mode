@@ -1,0 +1,97 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: ['./index.html', './src/**/*.{svelte,js,ts,jsx,tsx}'],
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        'on-surface': 'var(--on-surface)',
+        surface: 'var(--surface)',
+        'on-primary-container': 'var(--on-primary-container)',
+        'on-tertiary-fixed-variant': '#005306',
+        'on-error': 'var(--on-error)',
+        'surface-container': 'var(--surface-container)',
+        'surface-dim': 'var(--surface-dim)',
+        'on-error-container': '#ffdad6',
+        'tertiary-container': '#77d769',
+        'surface-variant': 'var(--surface-variant)',
+        'surface-container-lowest': 'var(--surface-container-lowest)',
+        'surface-container-highest': 'var(--surface-container-highest)',
+        'inverse-on-surface': '#303030',
+        'on-secondary': 'var(--on-secondary)',
+        'on-tertiary-fixed': '#002201',
+        'tertiary-fixed': '#97f987',
+        'primary-container': 'var(--primary-container)',
+        'outline-variant': 'var(--outline-variant)',
+        'inverse-primary': '#006687',
+        secondary: 'var(--secondary)',
+        'on-secondary-fixed': '#271900',
+        'secondary-fixed': '#ffdea7',
+        'surface-bright': 'var(--surface-bright)',
+        'on-surface-variant': 'var(--on-surface-variant)',
+        'error-container': '#93000a',
+        'on-secondary-container': '#6a4b00',
+        tertiary: 'var(--tertiary)',
+        'on-primary': 'var(--on-primary)',
+        'surface-container-low': 'var(--surface-container-low)',
+        outline: 'var(--outline)',
+        error: 'var(--error)',
+        'on-tertiary': 'var(--on-tertiary)',
+        primary: 'var(--primary)',
+        'secondary-fixed-dim': 'var(--secondary-fixed-dim)',
+        'on-primary-fixed': '#001e2b',
+        'surface-tint': '#74d1ff',
+        'on-background': 'var(--on-background)',
+        'tertiary-fixed-dim': '#7cdc6e',
+        'primary-fixed-dim': '#74d1ff',
+        'on-primary-fixed-variant': '#004d67',
+        'on-tertiary-container': '#005d07',
+        'surface-container-high': 'var(--surface-container-high)',
+        'primary-fixed': '#c1e8ff',
+        background: 'var(--background)',
+        'on-secondary-fixed-variant': '#5e4200'
+      },
+      borderRadius: {
+        DEFAULT: '0.25rem',
+        sm: '0.25rem',
+        md: '0.375rem',
+        lg: '0.5rem',
+        xl: '0.75rem',
+        '2xl': '1rem',
+        full: '9999px'
+      },
+      spacing: {
+        'space-xs': '0.25rem',
+        margin: '1.5rem',
+        'space-md': '0.75rem',
+        gutter: '1rem',
+        'space-sm': '0.5rem',
+        'gutter-desktop': '1.5rem',
+        'margin-compact': '1rem',
+        'space-xl': '1.5rem',
+        'space-lg': '1rem'
+      },
+      fontFamily: {
+        'headline-md': ['"Segoe UI Variable"', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'system-ui', 'sans-serif'],
+        'caption-sm': ['"Segoe UI Variable"', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'system-ui', 'sans-serif'],
+        'headline-lg': ['"Segoe UI Variable"', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'system-ui', 'sans-serif'],
+        'title-sm': ['"Segoe UI Variable"', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'system-ui', 'sans-serif'],
+        'body-md': ['"Segoe UI Variable"', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'system-ui', 'sans-serif'],
+        'label-md': ['"Segoe UI Variable"', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'system-ui', 'sans-serif'],
+        display: ['"Segoe UI Variable"', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'system-ui', 'sans-serif'],
+        'body-lg': ['"Segoe UI Variable"', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'system-ui', 'sans-serif']
+      },
+      fontSize: {
+        'headline-md': ['20px', { lineHeight: '26px', fontWeight: '600' }],
+        'caption-sm': ['11px', { lineHeight: '14px', fontWeight: '400' }],
+        'headline-lg': ['28px', { lineHeight: '36px', fontWeight: '600' }],
+        'title-sm': ['16px', { lineHeight: '22px', fontWeight: '600' }],
+        'body-md': ['13px', { lineHeight: '18px', fontWeight: '400' }],
+        'label-md': ['12px', { lineHeight: '16px', fontWeight: '500' }],
+        display: ['40px', { lineHeight: '52px', fontWeight: '600' }],
+        'body-lg': ['14px', { lineHeight: '20px', fontWeight: '400' }]
+      }
+    }
+  },
+  plugins: []
+};
