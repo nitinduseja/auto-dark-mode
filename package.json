@@ -1,0 +1,40 @@
+{
+  "name": "autodarkmode",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Lightweight, automatic theme switcher for Windows 11",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nitinduseja/auto-dark-mode.git"
+  },
+  "homepage": "https://github.com/nitinduseja/auto-dark-mode",
+  "bugs": {
+    "url": "https://github.com/nitinduseja/auto-dark-mode/issues"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && svelte-check --tsconfig ./tsconfig.json",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build --no-bundle",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@lucide/svelte": "^1.65.0",
+    "@tauri-apps/api": "^2.1.1"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "@tauri-apps/cli": "^2.1.1",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "svelte": "^5.19.2",
+    "svelte-check": "^4.1.4",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.7"
+  }
+}

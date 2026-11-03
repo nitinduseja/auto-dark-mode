@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e2536"/>
+      <stop offset="50%" stop-color="#141924"/>
+      <stop offset="100%" stop-color="#0b0e14"/>
+    </linearGradient>
+
+    <!-- Subtle Border Gradient -->
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(255, 255, 255, 0.28)"/>
+      <stop offset="100%" stop-color="rgba(255, 255, 255, 0.05)"/>
+    </linearGradient>
+
+    <!-- Sun Ray Warm Golden Gradient -->
+    <linearGradient id="sunGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fde047"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+
+    <!-- Moon Cool Cyan/Azure Gradient -->
+    <linearGradient id="moonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#93c5fd"/>
+      <stop offset="50%" stop-color="#60cdff"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+
+    <!-- Center Ambient Glow -->
+    <radialGradient id="ambientGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="rgba(96, 205, 255, 0.18)"/>
+      <stop offset="70%" stop-color="rgba(245, 158, 11, 0.08)"/>
+      <stop offset="100%" stop-color="rgba(0, 0, 0, 0)"/>
+    </radialGradient>
+  </defs>
+
+  <!-- App Squircle Tile Base -->
+  <rect x="64" y="64" width="896" height="896" rx="200" fill="url(#bgGrad)" stroke="url(#borderGrad)" stroke-width="12"/>
+
+  <!-- Radial Glow Behind Emblem -->
+  <circle cx="512" cy="512" r="380" fill="url(#ambientGlow)"/>
+
+  <!-- SunMoon Emblem (Scaled from 24x24 to 576x576 at offset 224, 224) -->
+  <g transform="translate(224, 224) scale(24)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Sun Ray Top (Gold) -->
+    <path d="M12 2v2" stroke="url(#sunGrad)" stroke-width="2.2"/>
+
+    <!-- Sun Ray Diagonal Top-Right (Gold) -->
+    <path d="m19 5-1.256 1.256" stroke="url(#sunGrad)" stroke-width="2.2"/>
+
+    <!-- Sun Ray Right (Gold) -->
+    <path d="M20 12h2" stroke="url(#sunGrad)" stroke-width="2.2"/>
+
+    <!-- Sun Inner Ring/Arc (Gold) -->
+    <path d="M16 12a4 4 0 0 0-4-4" stroke="url(#sunGrad)" stroke-width="2.2"/>
+
+    <!-- Moon Crescent Body (Cyan/Azure) -->
+    <path d="M14.837 16.385a6 6 0 1 1-7.223-7.222c.624-.147.97.66.715 1.248a4 4 0 0 0 5.26 5.259c.589-.255 1.396.09 1.248.715" stroke="url(#moonGrad)" stroke-width="2.2"/>
+  </g>
+</svg>
