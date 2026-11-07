@@ -33,7 +33,7 @@ mod win_impl {
     use windows::Win32::Foundation::ERROR_SUCCESS;
     use windows::Win32::System::Registry::{
         RegCloseKey, RegDeleteValueW, RegOpenKeyExW, RegQueryValueExW, RegSetValueExW, HKEY,
-        HKEY_CURRENT_USER, KEY_READ, KEY_SET_VALUE, REG_DWORD, REG_SZ, REG_VALUE_TYPE,
+        HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE, KEY_READ, KEY_SET_VALUE, REG_DWORD, REG_SZ, REG_VALUE_TYPE,
     };
 
     struct SafeHKey(HKEY);
@@ -204,6 +204,54 @@ mod win_impl {
         Ok(s)
     }
 
+    pub fn read_hklm_string(subkey: &str, value_name: &str) -> Result<String, RegistryError> {
+        let subkey_wide = to_wide_null(subkey);
+        let value_name_wide = to_wide_null(value_name);
+        let mut hkey = HKEY::default();
+
+        let status = unsafe {
+            RegOpenKeyExW(
+                HKEY_LOCAL_MACHINE,
+                PCWSTR(subkey_wide.as_ptr()),
+                0,
+                KEY_READ,
+                &mut hkey,
+            )
+        };
+
+        if status != ERROR_SUCCESS {
+            return Err(RegistryError::OpenKeyFailed(subkey.to_string(), status.0));
+        }
+
+        let _guard = SafeHKey(hkey);
+
+        let mut val_type = REG_VALUE_TYPE::default();
+        let mut buffer = [0u16; 512];
+        let mut data_size = (buffer.len() * std::mem::size_of::<u16>()) as u32;
+
+        let query_status = unsafe {
+            RegQueryValueExW(
+                hkey,
+                PCWSTR(value_name_wide.as_ptr()),
+                None,
+                Some(&mut val_type),
+                Some(buffer.as_mut_ptr() as *mut u8),
+                Some(&mut data_size),
+            )
+        };
+
+        if query_status != ERROR_SUCCESS {
+            return Err(RegistryError::ReadValueFailed(
+                value_name.to_string(),
+                query_status.0,
+            ));
+        }
+
+        let char_count = (data_size as usize / std::mem::size_of::<u16>()).saturating_sub(1);
+        let s = String::from_utf16_lossy(&buffer[..char_count]);
+        Ok(s)
+    }
+
     pub fn write_string(subkey: &str, value_name: &str, value: &str) -> Result<(), RegistryError> {
         let subkey_wide = to_wide_null(subkey);
         let value_name_wide = to_wide_null(value_name);
@@ -312,6 +360,18 @@ pub fn read_string(subkey: &str, value_name: &str) -> Result<String, RegistryErr
     #[cfg(target_os = "windows")]
     {
         win_impl::read_string(subkey, value_name)
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        let _ = (subkey, value_name);
+        Err(RegistryError::UnsupportedPlatform)
+    }
+}
+
+pub fn read_hklm_string(subkey: &str, value_name: &str) -> Result<String, RegistryError> {
+    #[cfg(target_os = "windows")]
+    {
+        win_impl::read_hklm_string(subkey, value_name)
     }
     #[cfg(not(target_os = "windows"))]
     {

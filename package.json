@@ -1,7 +1,7 @@
 {
   "name": "autodarkmode",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Lightweight, automatic theme switcher for Windows 11",
   "license": "MIT",
   "repository": {
@@ -23,7 +23,7 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@lucide/svelte": "^1.65.0",
+    "@lucide/svelte": "^1.70.0",
     "@tauri-apps/api": "^2.1.1"
   },
   "devDependencies": {

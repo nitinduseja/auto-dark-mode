@@ -1,7 +1,15 @@
 use serde::{Deserialize, Serialize};
 use std::process::Command;
+use std::sync::LazyLock;
+use std::time::Instant;
 use tauri::{command, AppHandle};
 use tracing::info;
+
+static APP_START_TIME: LazyLock<Instant> = LazyLock::new(Instant::now);
+
+pub fn init_app_start_time() {
+    let _ = *APP_START_TIME;
+}
 
 use super::OperationResult;
 use crate::config::{AppConfig, ConfigManager, SettingsConfig};
@@ -154,7 +162,7 @@ pub async fn open_external_url(url: String) -> OperationResult<bool> {
 
     #[cfg(target_os = "windows")]
     {
-        match Command::new("rundll32").args(["url.dll,FileProtocolHandler", &url]).spawn() {
+        match Command::new("cmd").args(["/c", "start", "", &url]).spawn() {
             Ok(_) => OperationResult::ok(true),
             Err(e) => OperationResult::err(format!("Failed to open URL in browser: {}", e)),
         }
@@ -176,13 +184,47 @@ pub async fn get_diagnostics_info() -> OperationResult<DiagnosticsInfo> {
         .map(|p| p.to_string_lossy().to_string())
         .unwrap_or_else(|_| "Unknown".to_string());
 
+    let (os_name, os_build) = {
+        #[cfg(target_os = "windows")]
+        {
+            let product = crate::windows::registry::read_hklm_string(
+                r"SOFTWARE\Microsoft\Windows NT\CurrentVersion",
+                "ProductName",
+            ).unwrap_or_else(|_| "Microsoft Windows".to_string());
+
+            let display_version = crate::windows::registry::read_hklm_string(
+                r"SOFTWARE\Microsoft\Windows NT\CurrentVersion",
+                "DisplayVersion",
+            ).unwrap_or_default();
+
+            let build_num = crate::windows::registry::read_hklm_string(
+                r"SOFTWARE\Microsoft\Windows NT\CurrentVersion",
+                "CurrentBuildNumber",
+            ).unwrap_or_else(|_| "Unknown Build".to_string());
+
+            let build_str = if display_version.is_empty() {
+                format!("Build {}", build_num)
+            } else {
+                format!("{} (Build {})", display_version, build_num)
+            };
+
+            (product, build_str)
+        }
+        #[cfg(not(target_os = "windows"))]
+        {
+            ("Desktop OS".to_string(), "Development Build".to_string())
+        }
+    };
+
+    let uptime = APP_START_TIME.elapsed().as_secs();
+
     OperationResult::ok(DiagnosticsInfo {
-        os_name: "Microsoft Windows 11".to_string(),
-        os_build: "10.0.26100 (24H2 / Sun Valley 3)".to_string(),
+        os_name,
+        os_build,
         arch: std::env::consts::ARCH.to_string(),
-        tauri_version: "2.12.5".to_string(),
-        webview_version: "Edge / WebView2 122.0.2365.92".to_string(),
+        tauri_version: tauri::VERSION.to_string(),
+        webview_version: "Edge / WebView2 (Chromium Evergreen)".to_string(),
         config_path,
-        uptime_seconds: 42,
+        uptime_seconds: uptime,
     })
 }

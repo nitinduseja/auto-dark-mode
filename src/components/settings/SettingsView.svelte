@@ -270,7 +270,7 @@ Config Path: ${settingsStore.diagnostics.config_path}`;
           AutoDarkMode for Windows 11
         </span>
         <span class="font-body-md text-body-md text-on-surface-variant">
-          Version 1.0.0 • Built with Rust + Tauri 2 + Svelte 5
+          Version 1.1.0 • Built with Rust + Tauri 2 + Svelte 5
         </span>
         <span class="font-caption-sm text-caption-sm text-outline pt-0.5">
           Open source desktop application licensed under MIT.

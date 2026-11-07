@@ -153,28 +153,39 @@ pub fn calculate_timeline_metrics(
     current_minute_of_day: u32,
 ) -> (f32, f32, f32, f32, String) {
     let total_minutes = 1440.0f32;
-
-    let sunrise = sunrise_minute_of_day.min(1440) as f32;
-    let sunset = sunset_minute_of_day.min(1440).max(sunrise_minute_of_day) as f32;
     let current = current_minute_of_day.min(1440) as f32;
-
-    let night1_pct = (sunrise / total_minutes) * 100.0;
-    let day_pct = ((sunset - sunrise) / total_minutes) * 100.0;
-    let night2_pct = ((total_minutes - sunset) / total_minutes) * 100.0;
     let needle_pct = (current / total_minutes) * 100.0;
 
-    let daylight_duration_minutes = sunset_minute_of_day.saturating_sub(sunrise_minute_of_day);
-    let hours = daylight_duration_minutes / 60;
-    let mins = daylight_duration_minutes % 60;
-    let daylight_formatted = format!("{}h {:02}m", hours, mins);
+    if sunrise_minute_of_day <= sunset_minute_of_day {
+        let sunrise = sunrise_minute_of_day.min(1440) as f32;
+        let sunset = sunset_minute_of_day.min(1440) as f32;
 
-    (
-        night1_pct,
-        day_pct,
-        night2_pct,
-        needle_pct,
-        daylight_formatted,
-    )
+        let night1_pct = (sunrise / total_minutes) * 100.0;
+        let day_pct = ((sunset - sunrise) / total_minutes) * 100.0;
+        let night2_pct = ((total_minutes - sunset) / total_minutes) * 100.0;
+
+        let daylight_duration_minutes = sunset_minute_of_day - sunrise_minute_of_day;
+        let hours = daylight_duration_minutes / 60;
+        let mins = daylight_duration_minutes % 60;
+        let daylight_formatted = format!("{}h {:02}m", hours, mins);
+
+        (night1_pct, day_pct, night2_pct, needle_pct, daylight_formatted)
+    } else {
+        // Inverted schedule crossing midnight (e.g. Light 8 PM to 6 AM)
+        let daylight_duration_minutes = (1440 - sunrise_minute_of_day) + sunset_minute_of_day;
+        let dark_duration_minutes = sunrise_minute_of_day - sunset_minute_of_day;
+
+        let day1_pct = (sunset_minute_of_day as f32 / total_minutes) * 100.0;
+        let night_pct = (dark_duration_minutes as f32 / total_minutes) * 100.0;
+        let day2_pct = ((1440 - sunrise_minute_of_day) as f32 / total_minutes) * 100.0;
+
+        let hours = daylight_duration_minutes / 60;
+        let mins = daylight_duration_minutes % 60;
+        let daylight_formatted = format!("{}h {:02}m", hours, mins);
+
+        // Represent segments consistently as (start_pct, mid_pct, end_pct)
+        (day1_pct, night_pct, day2_pct, needle_pct, daylight_formatted)
+    }
 }
 
 pub fn build_dashboard_state(config: &AppConfig) -> DashboardState {
@@ -261,30 +272,75 @@ pub fn build_dashboard_state(config: &AppConfig) -> DashboardState {
 
     // Determine next transition
     let (target_theme, event_name, time_formatted, mins_remaining) =
-        if current_minute < sunrise_minute {
-            (
-                ThemeMode::Light,
-                event_sunrise_name,
-                format_minutes_as_12h(sunrise_minute),
-                sunrise_minute - current_minute,
-            )
-        } else if current_minute < sunset_minute {
-            (
-                ThemeMode::Dark,
-                event_sunset_name,
-                format_minutes_as_12h(sunset_minute),
-                sunset_minute - current_minute,
-            )
+        if sunrise_minute <= sunset_minute {
+            if current_minute < sunrise_minute {
+                (
+                    ThemeMode::Light,
+                    event_sunrise_name,
+                    format_minutes_as_12h(sunrise_minute),
+                    sunrise_minute - current_minute,
+                )
+            } else if current_minute < sunset_minute {
+                (
+                    ThemeMode::Dark,
+                    event_sunset_name,
+                    format_minutes_as_12h(sunset_minute),
+                    sunset_minute - current_minute,
+                )
+            } else {
+                (
+                    ThemeMode::Light,
+                    event_sunrise_name,
+                    format_minutes_as_12h(sunrise_minute),
+                    (1440 - current_minute) + sunrise_minute,
+                )
+            }
         } else {
-            (
-                ThemeMode::Light,
-                event_sunrise_name,
-                format_minutes_as_12h(sunrise_minute),
-                (1440 - current_minute) + sunrise_minute,
-            )
+            // Inverted schedule crossing midnight (e.g. Light 8 PM, Dark 6 AM)
+            if current_minute < sunset_minute {
+                (
+                    ThemeMode::Dark,
+                    event_sunset_name,
+                    format_minutes_as_12h(sunset_minute),
+                    sunset_minute - current_minute,
+                )
+            } else if current_minute < sunrise_minute {
+                (
+                    ThemeMode::Light,
+                    event_sunrise_name,
+                    format_minutes_as_12h(sunrise_minute),
+                    sunrise_minute - current_minute,
+                )
+            } else {
+                (
+                    ThemeMode::Dark,
+                    event_sunset_name,
+                    format_minutes_as_12h(sunset_minute),
+                    (1440 - current_minute) + sunset_minute,
+                )
+            }
         };
 
-    let countdown_formatted = if mins_remaining >= 60 {
+    let countdown_formatted = if let Some(ref mo) = config.manual_override {
+        if let Some(until) = mo.until_timestamp {
+            let now_ts = now.timestamp();
+            if until > now_ts {
+                let remaining_secs = until - now_ts;
+                let rem_m = (remaining_secs + 59) / 60;
+                if rem_m >= 60 {
+                    format!("Paused ({}h {:02}m left)", rem_m / 60, rem_m % 60)
+                } else {
+                    format!("Paused ({}m left)", rem_m)
+                }
+            } else if mins_remaining >= 60 {
+                format!("In {}h {:02}m", mins_remaining / 60, mins_remaining % 60)
+            } else {
+                format!("In {}m", mins_remaining)
+            }
+        } else {
+            format!("Paused until {}", format_minutes_as_12h(if target_theme == ThemeMode::Light { sunrise_minute } else { sunset_minute }))
+        }
+    } else if mins_remaining >= 60 {
         format!("In {}h {:02}m", mins_remaining / 60, mins_remaining % 60)
     } else {
         format!("In {}m", mins_remaining)

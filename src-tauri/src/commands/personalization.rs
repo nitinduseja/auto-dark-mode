@@ -53,6 +53,50 @@ pub async fn set_personalization_config(
 }
 
 #[command]
+pub async fn select_wallpaper_file() -> OperationResult<Option<String>> {
+    info!("Handling select_wallpaper_file command");
+    #[cfg(target_os = "windows")]
+    {
+        use windows::core::{PCWSTR, PWSTR};
+        use windows::Win32::Foundation::HWND;
+        use windows::Win32::UI::Controls::Dialogs::{
+            GetOpenFileNameW, OFN_FILEMUSTEXIST, OFN_PATHMUSTEXIST, OPENFILENAMEW,
+        };
+
+        let mut file_buf = [0u16; 1024];
+        let filter: Vec<u16> = "Images (*.jpg;*.jpeg;*.png;*.bmp;*.webp)\0*.jpg;*.jpeg;*.png;*.bmp;*.webp\0All Files (*.*)\0*.*\0\0"
+            .encode_utf16()
+            .collect();
+        let title: Vec<u16> = "Select Wallpaper Image\0".encode_utf16().collect();
+
+        let mut ofn = OPENFILENAMEW {
+            lStructSize: std::mem::size_of::<OPENFILENAMEW>() as u32,
+            hwndOwner: HWND::default(),
+            lpstrFilter: PCWSTR(filter.as_ptr()),
+            lpstrFile: PWSTR(file_buf.as_mut_ptr()),
+            nMaxFile: file_buf.len() as u32,
+            lpstrTitle: PCWSTR(title.as_ptr()),
+            Flags: OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST,
+            ..Default::default()
+        };
+
+        let success = unsafe { GetOpenFileNameW(&mut ofn) };
+        if success.as_bool() {
+            let len = file_buf.iter().position(|&c| c == 0).unwrap_or(file_buf.len());
+            let path = String::from_utf16_lossy(&file_buf[..len]);
+            if !path.is_empty() {
+                return OperationResult::ok(Some(path));
+            }
+        }
+        OperationResult::ok(None)
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        OperationResult::ok(None)
+    }
+}
+
+#[command]
 pub async fn test_apply_wallpaper(request: TestWallpaperRequest) -> OperationResult<bool> {
     info!(
         "Handling test_apply_wallpaper for theme: {:?}",

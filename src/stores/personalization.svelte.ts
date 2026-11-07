@@ -4,6 +4,7 @@ import {
   fetchPersonalizationConfig,
   savePersonalizationConfig,
   testApplyWallpaper,
+  selectWallpaperFile,
   getDefaultPersonalizationConfig,
 } from '../services/tauri';
 
@@ -59,6 +60,23 @@ export class PersonalizationStore {
       this.errorMessage = err instanceof Error ? err.message : 'Failed to apply test wallpaper';
     } finally {
       this.isTestingWallpaper = false;
+    }
+  }
+
+  async browseWallpaper(mode: 'light' | 'dark'): Promise<void> {
+    this.errorMessage = null;
+    try {
+      const selected = await selectWallpaperFile();
+      if (selected) {
+        if (mode === 'light') {
+          this.config.light_wallpaper_path = selected;
+        } else {
+          this.config.dark_wallpaper_path = selected;
+        }
+        await this.save();
+      }
+    } catch (err: unknown) {
+      this.errorMessage = err instanceof Error ? err.message : 'Failed to select wallpaper file';
     }
   }
 }

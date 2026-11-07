@@ -23,6 +23,8 @@ pub fn should_start_in_background() -> bool {
 }
 
 pub fn run() {
+    commands::settings::init_app_start_time();
+
     let _ = tracing_subscriber::fmt()
         .with_env_filter(
             tracing_subscriber::EnvFilter::try_from_default_env()
@@ -54,6 +56,22 @@ pub fn run() {
             }
         }))
         .setup(|app| {
+            // Initialize AppState in-memory configuration cache
+            match config::ConfigManager::init_default() {
+                Ok(manager) => match config::AppState::new(manager) {
+                    Ok(app_state) => {
+                        app.manage(app_state);
+                        info!("AppState initialized and registered successfully");
+                    }
+                    Err(e) => {
+                        tracing::error!("Failed to create AppState: {}", e);
+                    }
+                },
+                Err(e) => {
+                    tracing::error!("Failed to initialize ConfigManager: {}", e);
+                }
+            }
+
             let start_background = should_start_in_background();
             info!("Application starting up. Background daemon mode: {}", start_background);
 
@@ -111,6 +129,8 @@ pub fn run() {
             commands::dashboard::get_dashboard_state,
             commands::dashboard::sync_theme_state,
             commands::theme::set_theme,
+            commands::theme::postpone_switch,
+            commands::theme::resume_automation,
             commands::theme::set_automation_enabled,
             commands::theme::set_follow_sun_enabled,
             commands::theme::set_quick_control,
@@ -121,6 +141,7 @@ pub fn run() {
             commands::schedule::get_schedule_config,
             commands::schedule::set_schedule_config,
             commands::schedule::calculate_solar_preview,
+            commands::schedule::detect_user_location,
             // Apps
             commands::apps::get_apps_config,
             commands::apps::set_apps_config,
@@ -131,6 +152,7 @@ pub fn run() {
             commands::personalization::get_personalization_config,
             commands::personalization::set_personalization_config,
             commands::personalization::test_apply_wallpaper,
+            commands::personalization::select_wallpaper_file,
             // Conditions
             commands::conditions::get_conditions_config,
             commands::conditions::set_conditions_config,

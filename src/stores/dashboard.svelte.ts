@@ -6,6 +6,8 @@ import {
   executeSetAutomation,
   executeSetFollowSun,
   executeSetQuickControl,
+  executePostponeSwitch,
+  executeResumeAutomation,
   syncThemeState,
   listenToSchedulerEvents,
 } from '../services/tauri';
@@ -84,11 +86,31 @@ export class DashboardStore {
     };
     mediaQuery.addEventListener('change', this.mediaQueryListener);
 
-    // 3. Periodic sync with Windows Registry (checks for external theme switches)
+    // 3. Periodic fallback sync with Windows Registry (60s heartbeat; real-time events handle changes immediately)
     if (!this.syncIntervalId) {
       this.syncIntervalId = window.setInterval(() => {
         this.refreshSilent();
-      }, 3000);
+      }, 60000);
+    }
+  }
+
+  async postpone(minutes: number = 60): Promise<void> {
+    this.errorMessage = null;
+    try {
+      await executePostponeSwitch(minutes);
+      await this.refresh();
+    } catch (err: unknown) {
+      this.errorMessage = err instanceof Error ? err.message : `Failed to postpone switch`;
+    }
+  }
+
+  async resumeAutomation(): Promise<void> {
+    this.errorMessage = null;
+    try {
+      await executeResumeAutomation();
+      await this.refresh();
+    } catch (err: unknown) {
+      this.errorMessage = err instanceof Error ? err.message : `Failed to resume schedule`;
     }
   }
 

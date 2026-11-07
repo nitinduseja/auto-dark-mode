@@ -4,7 +4,8 @@ node_modules/
 .pnp.js
 
 # Build outputs
-dist/
+dist/*
+!dist/.gitkeep
 dist-ssr/
 release/
 *.local

@@ -11,6 +11,7 @@
     Sparkles,
     Monitor,
     RefreshCw,
+    FolderOpen,
   } from '@lucide/svelte';
   import Card from '../ui/Card.svelte';
   import Button from '../ui/Button.svelte';
@@ -253,16 +254,26 @@
                 Apply Test
               </Button>
             </div>
-            <label for="light-wallpaper-input" class="sr-only">Light Mode Wallpaper Path</label>
-            <input
-              id="light-wallpaper-input"
-              type="text"
-              placeholder="C:\Users\Name\Pictures\wallpaper-light.jpg"
-              bind:value={personalizationStore.config.light_wallpaper_path}
-              class="h-8 px-space-sm rounded bg-surface-container-lowest border border-[var(--card-border)] text-on-surface text-body-md focus:border-primary outline-none font-mono"
-            />
+            <div class="flex items-center gap-space-xs">
+              <label for="light-wallpaper-input" class="sr-only">Light Mode Wallpaper Path</label>
+              <input
+                id="light-wallpaper-input"
+                type="text"
+                placeholder="C:\Users\Name\Pictures\wallpaper-light.jpg"
+                bind:value={personalizationStore.config.light_wallpaper_path}
+                class="flex-1 h-8 px-space-sm rounded bg-surface-container-lowest border border-[var(--card-border)] text-on-surface text-body-md focus:border-primary outline-none font-mono"
+              />
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={FolderOpen}
+                onclick={() => personalizationStore.browseWallpaper('light')}
+              >
+                Browse...
+              </Button>
+            </div>
             <span class="font-caption-sm text-caption-sm text-outline">
-              Specify full image file path (.jpg, .png, .jpeg, .bmp).
+              Specify or browse image file (.jpg, .png, .jpeg, .bmp, .webp).
             </span>
           </div>
 
@@ -283,16 +294,26 @@
                 Apply Test
               </Button>
             </div>
-            <label for="dark-wallpaper-input" class="sr-only">Dark Mode Wallpaper Path</label>
-            <input
-              id="dark-wallpaper-input"
-              type="text"
-              placeholder="C:\Users\Name\Pictures\wallpaper-dark.jpg"
-              bind:value={personalizationStore.config.dark_wallpaper_path}
-              class="h-8 px-space-sm rounded bg-surface-container-lowest border border-[var(--card-border)] text-on-surface text-body-md focus:border-primary outline-none font-mono"
-            />
+            <div class="flex items-center gap-space-xs">
+              <label for="dark-wallpaper-input" class="sr-only">Dark Mode Wallpaper Path</label>
+              <input
+                id="dark-wallpaper-input"
+                type="text"
+                placeholder="C:\Users\Name\Pictures\wallpaper-dark.jpg"
+                bind:value={personalizationStore.config.dark_wallpaper_path}
+                class="flex-1 h-8 px-space-sm rounded bg-surface-container-lowest border border-[var(--card-border)] text-on-surface text-body-md focus:border-primary outline-none font-mono"
+              />
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={FolderOpen}
+                onclick={() => personalizationStore.browseWallpaper('dark')}
+              >
+                Browse...
+              </Button>
+            </div>
             <span class="font-caption-sm text-caption-sm text-outline">
-              Specify full image file path (.jpg, .png, .jpeg, .bmp).
+              Specify or browse image file (.jpg, .png, .jpeg, .bmp, .webp).
             </span>
           </div>
         </div>

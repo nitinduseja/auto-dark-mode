@@ -81,7 +81,7 @@
           AutoDarkMode
         </span>
         <span class="font-caption-sm text-[10px] text-outline leading-tight">
-          {dashboard.state?.app_info?.version || 'v1.0.0'}
+          {dashboard.state?.app_info?.version || 'v1.1.0'}
         </span>
       </div>
     </div>

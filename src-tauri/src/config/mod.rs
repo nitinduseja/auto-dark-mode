@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::fs::{self, File};
 use std::io::{Read, Write};
 use std::path::PathBuf;
+use std::sync::{Arc, RwLock};
 use thiserror::Error;
 use tracing::{info, warn};
 
@@ -318,6 +319,13 @@ impl Default for SettingsConfig {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ManualOverride {
+    pub target_theme: ThemeMode,
+    pub until_timestamp: Option<i64>,
+    pub reason: String,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct AppConfig {
@@ -333,6 +341,7 @@ pub struct AppConfig {
     pub settings: SettingsConfig,
     pub last_switched_timestamp: Option<i64>,
     pub last_switched_trigger: Option<String>,
+    pub manual_override: Option<ManualOverride>,
 }
 
 impl Default for AppConfig {
@@ -350,6 +359,7 @@ impl Default for AppConfig {
             settings: SettingsConfig::default(),
             last_switched_timestamp: None,
             last_switched_trigger: None,
+            manual_override: None,
         }
     }
 }
@@ -492,6 +502,36 @@ impl ConfigManager {
 
         info!("Configuration saved safely to {:?}", self.config_path);
         Ok(())
+    }
+}
+
+#[derive(Clone)]
+pub struct AppState {
+    pub config: Arc<RwLock<AppConfig>>,
+    pub manager: Arc<ConfigManager>,
+}
+
+impl AppState {
+    pub fn new(manager: ConfigManager) -> Result<Self, ConfigError> {
+        let initial = manager.load_or_create()?;
+        Ok(Self {
+            config: Arc::new(RwLock::new(initial)),
+            manager: Arc::new(manager),
+        })
+    }
+
+    pub fn get_config(&self) -> AppConfig {
+        self.config.read().unwrap().clone()
+    }
+
+    pub fn update_config<F, R>(&self, f: F) -> Result<R, ConfigError>
+    where
+        F: FnOnce(&mut AppConfig) -> R,
+    {
+        let mut lock = self.config.write().unwrap();
+        let result = f(&mut lock);
+        self.manager.save(&lock)?;
+        Ok(result)
     }
 }
 
