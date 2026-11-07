@@ -24,7 +24,7 @@
   <div class="flex items-center gap-4">
     <span class="text-outline">
       {appInfo?.app_name || 'AutoDarkMode'}
-      {appInfo?.version || 'v1.0.0'} ({appInfo?.target_platform || 'Windows 11 x64'}) • {appInfo?.webview_runtime ||
+      {appInfo?.version || 'v1.1.0'} ({appInfo?.target_platform || 'Windows 11 x64'}) • {appInfo?.webview_runtime ||
         'WebView2 Runtime 122.0'}
     </span>
   </div>

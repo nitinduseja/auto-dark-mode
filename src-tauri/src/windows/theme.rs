@@ -96,16 +96,24 @@ pub fn detect_windows_theme() -> Result<DetectedTheme, ThemeError> {
 }
 
 pub fn apply_windows_theme(target: ThemeMode) -> Result<DetectedTheme, ThemeError> {
-    let target_dword = target.to_dword();
+    apply_windows_theme_independent(target, target)
+}
+
+pub fn apply_windows_theme_independent(
+    apps_target: ThemeMode,
+    system_target: ThemeMode,
+) -> Result<DetectedTheme, ThemeError> {
+    let apps_dword = apps_target.to_dword();
+    let system_dword = system_target.to_dword();
 
     // 1. Write AppsUseLightTheme
-    write_dword(PERSONALIZE_SUBKEY, APPS_USE_LIGHT_THEME, target_dword)
+    write_dword(PERSONALIZE_SUBKEY, APPS_USE_LIGHT_THEME, apps_dword)
         .map_err(|e| ThemeError::Registry(format!("Failed writing AppsUseLightTheme: {}", e)))?;
 
     // 2. Write SystemUsesLightTheme
-    if let Err(e) = write_dword(PERSONALIZE_SUBKEY, SYSTEM_USES_LIGHT_THEME, target_dword) {
+    if let Err(e) = write_dword(PERSONALIZE_SUBKEY, SYSTEM_USES_LIGHT_THEME, system_dword) {
         return Err(ThemeError::PartialSuccess(
-            target.to_string(),
+            apps_target.to_string(),
             e.to_string(),
         ));
     }
@@ -115,6 +123,78 @@ pub fn apply_windows_theme(target: ThemeMode) -> Result<DetectedTheme, ThemeErro
 
     // 4. Return fresh verified state
     detect_windows_theme()
+}
+
+pub fn apply_accent_color(hex_color: &str) -> Result<(), ThemeError> {
+    let clean_hex = hex_color.trim().trim_start_matches('#');
+    if clean_hex.len() != 6 {
+        return Ok(());
+    }
+
+    if let Ok(rgb) = u32::from_str_radix(clean_hex, 16) {
+        let r = (rgb >> 16) & 0xFF;
+        let g = (rgb >> 8) & 0xFF;
+        let b = rgb & 0xFF;
+
+        let colorization_color = 0xFF000000 | (r << 16) | (g << 8) | b;
+        let accent_color = 0xFF000000 | (b << 16) | (g << 8) | r;
+
+        let _ = write_dword(r"Software\Microsoft\Windows\DWM", "ColorizationColor", colorization_color);
+        let _ = write_dword(r"Software\Microsoft\Windows\DWM", "AccentColor", accent_color);
+        let _ = broadcast_theme_change();
+    }
+
+    Ok(())
+}
+
+pub fn apply_cursor_scheme(is_dark: bool) -> Result<(), ThemeError> {
+    #[cfg(target_os = "windows")]
+    {
+        use windows::Win32::UI::WindowsAndMessaging::{
+            SystemParametersInfoW, SPIF_SENDCHANGE, SPIF_UPDATEINIFILE, SPI_SETCURSORS,
+        };
+        use super::registry::write_string;
+
+        let scheme_name = if is_dark {
+            "Windows Black"
+        } else {
+            "Windows Default"
+        };
+
+        let _ = write_string(r"Control Panel\Cursors", "", scheme_name);
+        unsafe {
+            let _ = SystemParametersInfoW(
+                SPI_SETCURSORS,
+                0,
+                None,
+                SPIF_UPDATEINIFILE | SPIF_SENDCHANGE,
+            );
+        }
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        let _ = is_dark;
+    }
+    Ok(())
+}
+
+pub fn apply_sound_scheme(is_dark: bool) -> Result<(), ThemeError> {
+    #[cfg(target_os = "windows")]
+    {
+        use super::registry::write_string;
+        let scheme = if is_dark {
+            ".None"
+        } else {
+            ".Default"
+        };
+        let _ = write_string(r"AppEvents\Schemes", "", scheme);
+        let _ = broadcast_theme_change();
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        let _ = is_dark;
+    }
+    Ok(())
 }
 
 #[cfg(target_os = "windows")]

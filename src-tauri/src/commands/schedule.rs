@@ -30,6 +30,43 @@ pub struct SolarPreviewResult {
     pub daylight_window_formatted: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DetectedLocationResult {
+    pub location_name: String,
+    pub latitude: f64,
+    pub longitude: f64,
+}
+
+#[command]
+pub async fn detect_user_location() -> OperationResult<DetectedLocationResult> {
+    info!("Handling detect_user_location command based on local system timezone");
+    let now = Local::now();
+    let tz_offset_hours = now.offset().local_minus_utc() / 3600;
+
+    let (name, lat, lon) = match tz_offset_hours {
+        -10 => ("Honolulu, Hawaii", 21.3069, -157.8583),
+        -8 | -7 => ("Pacific Time (US)", 37.7749, -122.4194),
+        -6 => ("Central Time (US)", 41.8781, -87.6298),
+        -5 | -4 => ("Eastern Time (US)", 40.7128, -74.0060),
+        0 => ("London, UK (GMT)", 51.5074, -0.1278),
+        1 => ("Berlin / Paris (CET)", 52.5200, 13.4050),
+        2 => ("Eastern Europe (EET)", 50.4501, 30.5234),
+        3 => ("Moscow / Dubai", 55.7558, 37.6173),
+        5 | 6 => ("India / South Asia (IST)", 28.6139, 77.2090),
+        8 => ("Singapore / Beijing (SGT)", 1.3521, 103.8198),
+        9 => ("Tokyo, Japan (JST)", 35.6762, 139.6503),
+        10 | 11 => ("Sydney, Australia (AEST)", -33.8688, 151.2093),
+        12 | 13 => ("Auckland, New Zealand", -36.8485, 174.7633),
+        _ => ("Local Timezone Location", 40.7128, -74.0060),
+    };
+
+    OperationResult::ok(DetectedLocationResult {
+        location_name: name.to_string(),
+        latitude: lat,
+        longitude: lon,
+    })
+}
+
 #[command]
 pub async fn get_schedule_config() -> OperationResult<ScheduleConfig> {
     info!("Handling get_schedule_config command");

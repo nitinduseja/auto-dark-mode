@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { MapPin, Sunrise, Sunset, Sliders } from '@lucide/svelte';
+  import { MapPin, Sunrise, Sunset, Sliders, Crosshair } from '@lucide/svelte';
   import { scheduleStore } from '../../stores/schedule.svelte';
   import { POPULAR_CITIES, type CityPreset } from '../../types/schedule';
 
@@ -84,10 +84,21 @@
   <div class="grid grid-cols-1 md:grid-cols-12 gap-space-md">
     <!-- City Preset Dropdown -->
     <div class="md:col-span-5 flex flex-col gap-1.5">
-      <label for="city-select" class="font-label-md text-label-md text-on-surface font-medium flex items-center gap-1.5">
-        <MapPin size={14} class="text-primary-container" />
-        <span>Location Preset</span>
-      </label>
+      <div class="flex items-center justify-between">
+        <label for="city-select" class="font-label-md text-label-md text-on-surface font-medium flex items-center gap-1.5">
+          <MapPin size={14} class="text-primary-container" />
+          <span>Location Preset</span>
+        </label>
+        <button
+          type="button"
+          class="text-caption-sm text-primary hover:underline flex items-center gap-1 cursor-pointer font-medium"
+          onclick={() => scheduleStore.autoDetectLocation()}
+          title="Auto-detect coordinates from Windows system timezone"
+        >
+          <Crosshair size={12} />
+          <span>Auto-detect</span>
+        </button>
+      </div>
       <select
         id="city-select"
         value={selectedCityValue}

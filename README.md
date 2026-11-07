@@ -187,7 +187,7 @@ src-tauri/target/release/autodarkmode.exe
 ## Automated Releases (CI/CD)
 
 Production builds and GitHub releases are fully automated via GitHub Actions:
-- **Trigger:** Pushing a version tag (e.g., `git push origin v1.0.0`).
+- **Trigger:** Pushing to the `main` branch, pushing a version tag (e.g., `git push origin v1.1.0`), or triggering manually via `workflow_dispatch`.
 - **Pipeline:** Runs on `windows-latest`, installs dependencies with `npm ci`, builds frontend production bundles, compiles the Rust release executable using Cargo's release profile, computes SHA-256 checksums, and attaches `AutoDarkMode.exe` and `AutoDarkMode.exe.sha256` directly to a GitHub Release.
 
 

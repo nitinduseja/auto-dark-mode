@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.0] - 2026-11-06
+
+### Added
+- **Native File Picker for Wallpapers**: Integrated native Win32 `GetOpenFileNameW` dialog with image filters (`.jpg`, `.png`, `.jpeg`, `.bmp`, `.webp`) allowing one-click wallpaper selection.
+- **Postpone Switch & Quick Resume**: Added flexible transition deferral (`postpone_switch`) and schedule resumption (`resume_automation`) directly accessible from the Overview dashboard and System Tray context menu.
+- **Native System Tray Context Menu**: Implemented Win32 right-click tray context menu featuring Open Dashboard, Light/Dark toggles, Postpone 1 hour, Resume Automation, Settings, and Clean Exit.
+- **DPI-Aware Multi-Monitor Tray Positioning**: Enhanced tray popups to inspect cursor coordinates and anchor accurately on multi-monitor setups using `MonitorFromPoint`.
+- **Automatic Location Detection**: Added instant local timezone-based geographic coordinate resolver in Schedule settings.
+- **Accent Color, Cursor, and Sound Synchronization**: Implemented Windows personalization registry hooks for DWM accent colors (`apply_accent_color`), mouse cursor schemes (`apply_cursor_scheme`), and sound schemes (`apply_sound_scheme`).
+- **User Idle Detection**: Integrated `GetLastInputInfo` to prevent disruptive visual switches while actively interacting with the computer.
+- **Full Mica Material Support**: Configured window transparency and translucent Fluent design tokens so Windows 11 DWM Mica material shines cleanly through the application surface.
+- **Automated CI/CD Release Trigger**: Updated GitHub Actions release workflow to trigger on code pushes to `main` as well as tags, and added manual `workflow_dispatch` trigger.
+
+### Fixed
+- **Reversion Fighting Loop**: Fixed manual theme switches being overwritten within 2 seconds by introducing `ManualOverride` state in the background scheduler.
+- **Battery Saver Inversion**: Corrected power conditions logic to force Dark Mode instead of Light Mode when battery saver is active.
+- **Fullscreen Game Detection False Positives**: Replaced screen bounds heuristics with `SHQueryUserNotificationState` to avoid falsely flagging normal maximized windows as full-screen DirectX games.
+- **Inverted Schedule Timeline Math**: Fixed percentage calculations and countdown display for inverted / night-shift schedules crossing midnight.
+- **Fresh Checkout Compile Panic**: Committed `dist/.gitkeep` ensuring frontend asset directories exist on clean git checkouts.
+- **Excessive Disk I/O & Polling**: Replaced aggressive disk-reading loops with an in-memory `AppState` cache (`Arc<RwLock<AppConfig>>`) and event-driven Svelte store reactions.
+- **Real Environment Diagnostics**: Updated diagnostics to report authentic Windows 11 OS builds, process uptime, and system architecture.
+
+---
+
 ## [1.0.0] - 2026-11-02
 
 ### Added

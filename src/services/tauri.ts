@@ -98,6 +98,32 @@ export async function executeSetQuickControl(id: string, enabled: boolean): Prom
   return enabled;
 }
 
+export async function executePostponeSwitch(minutes: number): Promise<boolean> {
+  if (isTauriEnvironment()) {
+    const { invoke } = await import('@tauri-apps/api/core');
+    const res = await invoke<OperationResult<boolean>>('postpone_switch', {
+      request: { minutes },
+    });
+    if (res.success && res.data !== undefined) {
+      return res.data;
+    }
+    throw new Error(res.error || 'Failed to postpone switch');
+  }
+  return true;
+}
+
+export async function executeResumeAutomation(): Promise<boolean> {
+  if (isTauriEnvironment()) {
+    const { invoke } = await import('@tauri-apps/api/core');
+    const res = await invoke<OperationResult<boolean>>('resume_automation');
+    if (res.success && res.data !== undefined) {
+      return res.data;
+    }
+    throw new Error(res.error || 'Failed to resume automation');
+  }
+  return true;
+}
+
 export async function syncThemeState(): Promise<DashboardState> {
   if (isTauriEnvironment()) {
     const { invoke } = await import('@tauri-apps/api/core');
@@ -291,6 +317,28 @@ export async function calculateSolarPreview(
   };
 }
 
+export async function detectUserLocation(): Promise<{
+  location_name: string;
+  latitude: number;
+  longitude: number;
+}> {
+  if (isTauriEnvironment()) {
+    const { invoke } = await import('@tauri-apps/api/core');
+    const res = await invoke<
+      OperationResult<{ location_name: string; latitude: number; longitude: number }>
+    >('detect_user_location');
+    if (res.success && res.data) {
+      return res.data;
+    }
+    throw new Error(res.error || 'Failed to detect user location');
+  }
+  return {
+    location_name: 'Local Timezone Location',
+    latitude: 40.7128,
+    longitude: -74.006,
+  };
+}
+
 // ==================== APPS ====================
 
 export async function fetchAppsConfig(): Promise<AppsConfig> {
@@ -387,6 +435,18 @@ export async function testApplyWallpaper(theme: ThemeMode): Promise<boolean> {
     throw new Error(res.error || 'Failed to apply test wallpaper');
   }
   return true;
+}
+
+export async function selectWallpaperFile(): Promise<string | null> {
+  if (isTauriEnvironment()) {
+    const { invoke } = await import('@tauri-apps/api/core');
+    const res = await invoke<OperationResult<string | null>>('select_wallpaper_file');
+    if (res.success) {
+      return res.data ?? null;
+    }
+    throw new Error(res.error || 'Failed to select wallpaper file');
+  }
+  return null;
 }
 
 // ==================== CONDITIONS ====================
@@ -773,7 +833,7 @@ function getFallbackDashboardState(): DashboardState {
     ],
     app_info: {
       app_name: 'AutoDarkMode',
-      version: 'v1.0.0',
+      version: 'v1.1.0',
       target_platform: 'Windows 11 x64',
       webview_runtime: 'WebView2 Runtime 122.0',
     },

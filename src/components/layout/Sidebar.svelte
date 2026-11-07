@@ -29,7 +29,7 @@
 
   let { currentPage = 'overview', onnavigate }: Props = $props();
 
-  let version = $derived(dashboard.state?.app_info.version || 'v1.0.0');
+  let version = $derived(dashboard.state?.app_info.version || 'v1.1.0');
 
   function handleNavigate(page: AppPage) {
     if (onnavigate) {

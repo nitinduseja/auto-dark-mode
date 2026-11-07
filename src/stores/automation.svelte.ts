@@ -49,7 +49,7 @@ export class AutomationStore {
     this.isCheckingUpdate = true;
     this.updateStatus = null;
     await new Promise((resolve) => setTimeout(resolve, 800));
-    this.updateStatus = 'You are on the latest release of AutoDarkMode (v1.0.0)';
+    this.updateStatus = 'You are on the latest release of AutoDarkMode (v1.1.0)';
     this.isCheckingUpdate = false;
   }
 }

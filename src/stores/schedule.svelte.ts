@@ -8,6 +8,7 @@ import {
   fetchScheduleConfig,
   saveScheduleConfig,
   calculateSolarPreview,
+  detectUserLocation,
   getDefaultScheduleConfig,
 } from '../services/tauri';
 import { dashboard } from './dashboard.svelte';
@@ -81,6 +82,21 @@ export class ScheduleStore {
     this.config.longitude = city.longitude;
     this.checkDirty();
     this.refreshPreview();
+  }
+
+  async autoDetectLocation(): Promise<void> {
+    this.errorMessage = null;
+    try {
+      const loc = await detectUserLocation();
+      this.config.location_name = loc.location_name;
+      this.config.latitude = loc.latitude;
+      this.config.longitude = loc.longitude;
+      this.config.use_location_service = true;
+      this.checkDirty();
+      await this.refreshPreview();
+    } catch (err: unknown) {
+      this.errorMessage = err instanceof Error ? err.message : 'Failed to auto-detect location';
+    }
   }
 
   private checkDirty(): void {

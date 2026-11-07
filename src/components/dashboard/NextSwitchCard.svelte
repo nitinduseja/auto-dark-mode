@@ -50,11 +50,33 @@
     </div>
   </div>
 
-  <!-- Astronomical / Location Metadata -->
-  <div class="pt-space-md flex items-center gap-1.5 font-caption-sm text-caption-sm text-outline">
-    <MapPin size={14} class="flex-shrink-0" />
-    <span class="truncate">
-      {next?.location_note || 'Configured schedule'}
-    </span>
+  <!-- Astronomical / Location Metadata & Quick Actions -->
+  <div class="pt-space-sm flex items-center justify-between font-caption-sm text-caption-sm text-outline border-t border-[var(--card-border)]/40 mt-space-xs">
+    <div class="flex items-center gap-1.5 truncate max-w-[65%]">
+      <MapPin size={14} class="flex-shrink-0" />
+      <span class="truncate">
+        {next?.location_note || 'Configured schedule'}
+      </span>
+    </div>
+    <div class="flex items-center gap-2 flex-shrink-0">
+      {#if next?.countdown_formatted?.startsWith('Paused')}
+        <button
+          type="button"
+          class="text-primary hover:underline font-medium transition-colors cursor-pointer"
+          onclick={() => dashboard.resumeAutomation()}
+        >
+          Resume
+        </button>
+      {:else}
+        <button
+          type="button"
+          class="text-on-surface-variant hover:text-on-surface hover:underline font-medium transition-colors cursor-pointer"
+          onclick={() => dashboard.postpone(60)}
+          title="Postpone automatic switch by 1 hour"
+        >
+          Postpone 1h
+        </button>
+      {/if}
+    </div>
   </div>
 </div>

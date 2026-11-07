@@ -15,6 +15,7 @@
   import ShortcutsView from './components/shortcuts/ShortcutsView.svelte';
   import SettingsView from './components/settings/SettingsView.svelte';
   import TrayFlyout from './components/tray/TrayFlyout.svelte';
+  import StatusBar from './components/layout/StatusBar.svelte';
   import StatusIndicator from './components/ui/StatusIndicator.svelte';
   import IconButton from './components/ui/IconButton.svelte';
   import { dashboard } from './stores/dashboard.svelte';
@@ -147,6 +148,9 @@
 
             <!-- Quick Controls Bento Section -->
             <QuickControls onnavigate={handleNavigate} />
+
+            <!-- System Status Bar -->
+            <StatusBar />
           </div>
         {:else if currentPage === 'schedule'}
           <ScheduleView />
