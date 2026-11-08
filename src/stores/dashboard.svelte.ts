@@ -38,10 +38,14 @@ export class DashboardStore {
     this.isLoading = true;
     this.errorMessage = null;
 
-    // Detect system preferred theme initially if available
+    // Detect system preferred theme initially if available (without prematurely overriding pre-existing class)
     if (typeof window !== 'undefined') {
-      const isSystemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      applyDomTheme(isSystemDark ? 'dark' : 'light');
+      const hasDark = document.documentElement.classList.contains('dark');
+      const hasLight = document.documentElement.classList.contains('light');
+      if (!hasDark && !hasLight) {
+        const isSystemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        applyDomTheme(isSystemDark ? 'dark' : 'light');
+      }
     }
 
     try {

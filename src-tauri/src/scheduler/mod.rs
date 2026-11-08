@@ -267,18 +267,8 @@ pub fn perform_evaluation_tick(app: &AppHandle) {
         let _ = apply_sound_scheme(expected_theme == ThemeMode::Dark);
     }
 
-    // 2. Update native window DWM theme
-    if let Some(window) = app.get_webview_window("main") {
-        #[cfg(target_os = "windows")]
-        {
-            if let Ok(hwnd) = window.hwnd() {
-                crate::windows::window::update_window_theme(
-                    hwnd.0 as isize,
-                    expected_theme == ThemeMode::Dark,
-                );
-            }
-        }
-    }
+    // 2. Update native window DWM theme across all open windows (main and tray-popup)
+    crate::windows::window::update_all_windows_theme(&app, expected_theme == ThemeMode::Dark);
 
     // 3. Apply Wallpaper if enabled
     if config.personalization.wallpaper_enabled || config.features.wallpaper {

@@ -1,6 +1,6 @@
 use std::sync::atomic::{AtomicI64, Ordering};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
-use tauri::{AppHandle, Manager, PhysicalPosition, Position, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
+use tauri::{AppHandle, Emitter, Manager, PhysicalPosition, Position, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
 use tracing::info;
 
 pub const TRAY_WIDTH: i32 = 360;
@@ -85,6 +85,8 @@ pub fn create_tray_popup_window(app: &AppHandle) -> Result<WebviewWindow, tauri:
     .decorations(false)
     .always_on_top(true)
     .skip_taskbar(true)
+    .transparent(true)
+    .shadow(false)
     .visible(false)
     .build()?;
 
@@ -92,7 +94,11 @@ pub fn create_tray_popup_window(app: &AppHandle) -> Result<WebviewWindow, tauri:
     #[cfg(target_os = "windows")]
     {
         if let Ok(hwnd) = popup.hwnd() {
+            let is_dark = crate::windows::detect_windows_theme()
+                .map(|t| t.effective_theme == crate::windows::ThemeMode::Dark)
+                .unwrap_or(true);
             let _ = crate::windows::window::apply_mica_to_hwnd(hwnd.0 as isize);
+            crate::windows::window::update_window_theme(hwnd.0 as isize, is_dark);
         }
     }
 
@@ -134,10 +140,20 @@ pub fn toggle_tray_popup(app: &AppHandle, click_pos: Option<tauri::PhysicalPosit
     if is_visible {
         let _ = popup.hide();
     } else {
+        #[cfg(target_os = "windows")]
+        {
+            if let Ok(hwnd) = popup.hwnd() {
+                let is_dark = crate::windows::detect_windows_theme()
+                    .map(|t| t.effective_theme == crate::windows::ThemeMode::Dark)
+                    .unwrap_or(true);
+                crate::windows::window::update_window_theme(hwnd.0 as isize, is_dark);
+            }
+        }
         let (x, y) = calculate_tray_popup_position_at(click_pos);
         let _ = popup.set_position(Position::Physical(PhysicalPosition { x, y }));
         let _ = popup.show();
         let _ = popup.set_focus();
+        let _ = popup.emit("tray-shown", ());
     }
 }
 

@@ -41,6 +41,24 @@ pub fn update_window_theme(hwnd_isize: isize, is_dark: bool) {
     }
 }
 
+pub fn update_all_windows_theme(app: &tauri::AppHandle, is_dark: bool) {
+    use tauri::Manager;
+    for label in &["main", "tray-popup"] {
+        if let Some(window) = app.get_webview_window(label) {
+            #[cfg(target_os = "windows")]
+            {
+                if let Ok(hwnd) = window.hwnd() {
+                    update_window_theme(hwnd.0 as isize, is_dark);
+                }
+            }
+            #[cfg(not(target_os = "windows"))]
+            {
+                let _ = (window, is_dark);
+            }
+        }
+    }
+}
+
 #[cfg(target_os = "windows")]
 mod win_impl {
     use super::*;

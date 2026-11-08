@@ -31,6 +31,29 @@
   onMount(() => {
     dashboard.init();
     themeSelectionStore.init();
+
+    const handleFocus = () => {
+      dashboard.refreshSilent();
+      themeSelectionStore.init();
+    };
+    window.addEventListener('focus', handleFocus);
+
+    let unlisten: (() => void) | null = null;
+    import('@tauri-apps/api/event')
+      .then(({ listen }) => {
+        listen('tray-shown', () => {
+          dashboard.refreshSilent();
+          themeSelectionStore.init();
+        }).then((u) => {
+          unlisten = u;
+        });
+      })
+      .catch(() => {});
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      if (unlisten) unlisten();
+    };
   });
 
   async function handleSetTheme(mode: ThemeMode) {
@@ -66,7 +89,7 @@
 </script>
 
 <div
-  class="w-full h-full bg-surface-container/95 backdrop-blur-2xl text-on-surface border border-[var(--titlebar-border)] flex flex-col p-3.5 select-none rounded-xl overflow-hidden shadow-2xl font-body-md text-body-md"
+  class="fluent-tray-flyout w-full h-full text-on-surface flex flex-col p-3.5 select-none rounded-xl overflow-hidden font-body-md text-body-md"
 >
   <!-- Top Header Bar -->
   <div class="flex items-center justify-between pb-2 border-b border-[var(--card-border)]">
@@ -158,7 +181,7 @@
 
     <!-- Next Transition Card -->
     {#if dashboard.state?.next_transition}
-      <div class="p-2 rounded bg-surface-container-low/70 border border-[var(--card-border)] flex items-center justify-between text-caption-sm">
+      <div class="p-2 rounded bg-surface-container-low border border-[var(--card-border)] flex items-center justify-between text-caption-sm">
         <div class="flex items-center gap-1.5 text-on-surface-variant">
           <Clock class="w-3.5 h-3.5 text-secondary" />
           <span>Next: {dashboard.state.next_transition.event_name}</span>

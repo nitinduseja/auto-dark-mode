@@ -92,7 +92,11 @@ pub fn run() {
                 #[cfg(target_os = "windows")]
                 {
                     if let Ok(hwnd) = window.hwnd() {
+                        let is_dark = windows::detect_windows_theme()
+                            .map(|t| t.effective_theme == windows::ThemeMode::Dark)
+                            .unwrap_or(true);
                         let status = windows::apply_mica_to_hwnd(hwnd.0 as isize);
+                        windows::window::update_window_theme(hwnd.0 as isize, is_dark);
                         info!("Mica initialization status: {:?}", status);
                     }
                 }

@@ -17,4 +17,4 @@ pub use theme::{
     apply_windows_theme_independent, detect_windows_theme, DetectedTheme, ThemeError, ThemeMode,
 };
 pub use wallpaper::set_desktop_wallpaper;
-pub use window::{apply_mica_to_hwnd, MicaStatus};
+pub use window::{apply_mica_to_hwnd, update_all_windows_theme, update_window_theme, MicaStatus};

@@ -59,18 +59,8 @@ pub async fn set_theme(app: AppHandle, request: SetThemeRequest) -> OperationRes
     // 1. Apply to Windows personalization settings
     match apply_windows_theme(request.theme) {
         Ok(detected) => {
-            // 2. Update native window DWM dark mode frame
-            if let Some(window) = app.get_webview_window("main") {
-                #[cfg(target_os = "windows")]
-                {
-                    if let Ok(hwnd) = window.hwnd() {
-                        crate::windows::window::update_window_theme(
-                            hwnd.0 as isize,
-                            request.theme == ThemeMode::Dark,
-                        );
-                    }
-                }
-            }
+            // 2. Update native window DWM dark mode frame across all open windows (main and tray-popup)
+            crate::windows::window::update_all_windows_theme(&app, request.theme == ThemeMode::Dark);
 
             // 3. Persist in configuration and apply Windows .theme file / wallpaper if configured
             let mut updated_config = None;

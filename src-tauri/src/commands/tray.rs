@@ -38,6 +38,7 @@ pub async fn open_main_window(app: AppHandle, page: Option<String>) -> Operation
         .min_inner_size(1000.0, 700.0)
         .resizable(true)
         .decorations(false)
+        .transparent(true)
         .visible(true);
 
         match builder.build() {
@@ -49,7 +50,11 @@ pub async fn open_main_window(app: AppHandle, page: Option<String>) -> Operation
                 #[cfg(target_os = "windows")]
                 {
                     if let Ok(hwnd) = new_main.hwnd() {
+                        let is_dark = crate::windows::detect_windows_theme()
+                            .map(|t| t.effective_theme == crate::windows::ThemeMode::Dark)
+                            .unwrap_or(true);
                         let _ = crate::windows::window::apply_mica_to_hwnd(hwnd.0 as isize);
+                        crate::windows::window::update_window_theme(hwnd.0 as isize, is_dark);
                     }
                 }
                 OperationResult::ok(true)
