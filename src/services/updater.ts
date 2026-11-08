@@ -127,3 +127,46 @@ export async function checkForUpdates(currentVersion: string = APP_VERSION): Pro
     };
   }
 }
+
+export interface DownloadProgressPayload {
+  percentage: number;
+  downloaded_bytes: number;
+  total_bytes: number;
+}
+
+export async function downloadUpdate(downloadUrl: string): Promise<void> {
+  const { invoke } = await import('@tauri-apps/api/core');
+  return await invoke('download_update', { url: downloadUrl });
+}
+
+export async function installAndRestart(): Promise<void> {
+  const { invoke } = await import('@tauri-apps/api/core');
+  return await invoke('install_and_restart');
+}
+
+export async function listenUpdateProgress(
+  callback: (payload: DownloadProgressPayload) => void
+): Promise<() => void> {
+  const { listen } = await import('@tauri-apps/api/event');
+  return await listen<DownloadProgressPayload>('update-download-progress', (event) => {
+    callback(event.payload);
+  });
+}
+
+export async function listenUpdateComplete(
+  callback: () => void
+): Promise<() => void> {
+  const { listen } = await import('@tauri-apps/api/event');
+  return await listen('update-download-complete', () => {
+    callback();
+  });
+}
+
+export async function listenUpdateError(
+  callback: (err: string) => void
+): Promise<() => void> {
+  const { listen } = await import('@tauri-apps/api/event');
+  return await listen<string>('update-download-error', (event) => {
+    callback(event.payload);
+  });
+}

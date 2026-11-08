@@ -178,6 +178,9 @@ pub fn run() {
             commands::settings::open_config_folder,
             commands::settings::open_external_url,
             commands::settings::get_diagnostics_info,
+            // In-App Updater & Seamless Restart
+            commands::updater::download_update,
+            commands::updater::install_and_restart,
             // Tray Flyout Commands
             commands::tray::open_main_window,
             commands::tray::hide_main_window,

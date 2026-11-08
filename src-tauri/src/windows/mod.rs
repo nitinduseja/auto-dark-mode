@@ -7,6 +7,7 @@ pub mod registry;
 pub mod scripts;
 pub mod startup;
 pub mod theme;
+pub mod updater;
 pub mod wallpaper;
 pub mod window;
 

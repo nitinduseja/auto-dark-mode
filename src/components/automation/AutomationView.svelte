@@ -11,6 +11,7 @@
     RefreshCw,
     ExternalLink,
     Sparkles,
+    CheckCircle2,
   } from '@lucide/svelte';
   import Card from '../ui/Card.svelte';
   import Button from '../ui/Button.svelte';
@@ -22,6 +23,12 @@
   onMount(() => {
     automationStore.init();
   });
+
+  function formatBytes(bytes: number): string {
+    if (!bytes || bytes <= 0) return '0 MB';
+    const mb = bytes / (1024 * 1024);
+    return `${mb.toFixed(1)} MB`;
+  }
 </script>
 
 <div class="flex flex-col w-full gap-space-lg max-w-[1400px] mx-auto select-none">
@@ -193,45 +200,91 @@
 
       {#if automationStore.updateResult?.status === 'update-available'}
         <div
-          class="p-space-md rounded-lg bg-primary/10 border border-primary/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-space-md"
+          class="p-space-md rounded-lg bg-primary/10 border border-primary/30 flex flex-col gap-space-md"
         >
-          <div class="flex items-start gap-3">
-            <div
-              class="w-9 h-9 rounded-md bg-primary/20 text-primary flex items-center justify-center flex-shrink-0 mt-0.5"
-            >
-              <Sparkles class="w-5 h-5" />
+          <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-space-md">
+            <div class="flex items-start gap-3">
+              <div
+                class="w-9 h-9 rounded-md bg-primary/20 text-primary flex items-center justify-center flex-shrink-0 mt-0.5"
+              >
+                <Sparkles class="w-5 h-5" />
+              </div>
+              <div class="flex flex-col gap-0.5">
+                <span class="font-label-md text-label-md text-on-surface font-semibold">
+                  AutoDarkMode {automationStore.updateResult.latestVersion} is available!
+                </span>
+                <span class="font-caption-sm text-caption-sm text-on-surface-variant">
+                  You are currently running v{automationStore.updateResult.currentVersion}. {automationStore.updateResult.releaseName ? `Release: ${automationStore.updateResult.releaseName}` : ''}
+                </span>
+              </div>
             </div>
-            <div class="flex flex-col gap-0.5">
-              <span class="font-label-md text-label-md text-on-surface font-semibold">
-                AutoDarkMode {automationStore.updateResult.latestVersion} is available!
-              </span>
-              <span class="font-caption-sm text-caption-sm text-on-surface-variant">
-                You are currently running v{automationStore.updateResult.currentVersion}. {automationStore.updateResult.releaseName ? `Release: ${automationStore.updateResult.releaseName}` : ''}
-              </span>
+            <div class="flex items-center gap-space-sm flex-shrink-0">
+              {#if automationStore.updateResult.releaseUrl}
+                <button
+                  type="button"
+                  onclick={() => openExternalUrl(automationStore.updateResult!.releaseUrl!)}
+                  class="h-8 px-space-md rounded bg-surface-container-high hover:bg-surface-variant text-on-surface text-caption-sm font-medium flex items-center gap-1.5 transition-colors cursor-pointer border border-[var(--card-border)]"
+                >
+                  <span>Release Notes</span>
+                  <ExternalLink class="w-3.5 h-3.5" />
+                </button>
+              {/if}
+              {#if !automationStore.isDownloadingUpdate && !automationStore.isRestarting}
+                <button
+                  type="button"
+                  onclick={() => automationStore.startUpdateDownload()}
+                  class="h-8 px-space-md rounded bg-primary text-on-primary hover:bg-primary/90 text-caption-sm font-medium flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
+                >
+                  <Download class="w-3.5 h-3.5" />
+                  <span>Update Now</span>
+                </button>
+              {/if}
             </div>
           </div>
-          <div class="flex items-center gap-space-sm flex-shrink-0">
-            {#if automationStore.updateResult.releaseUrl}
-              <button
-                type="button"
-                onclick={() => openExternalUrl(automationStore.updateResult!.releaseUrl!)}
-                class="h-8 px-space-md rounded bg-primary text-on-primary hover:bg-primary/90 text-caption-sm font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
-              >
-                <span>View Release Notes</span>
-                <ExternalLink class="w-3.5 h-3.5" />
-              </button>
-            {/if}
-            {#if automationStore.updateResult.downloadUrl && automationStore.updateResult.downloadUrl !== automationStore.updateResult.releaseUrl}
-              <button
-                type="button"
-                onclick={() => openExternalUrl(automationStore.updateResult!.downloadUrl!)}
-                class="h-8 px-space-md rounded bg-surface-container-high hover:bg-surface-variant text-on-surface text-caption-sm font-medium flex items-center gap-1.5 transition-colors cursor-pointer border border-[var(--card-border)]"
-              >
-                <span>Download .exe</span>
-                <Download class="w-3.5 h-3.5" />
-              </button>
-            {/if}
-          </div>
+
+          <!-- Active Download / Restarting Progress -->
+          {#if automationStore.isRestarting}
+            <div class="flex items-center gap-2 p-2.5 rounded bg-tertiary/15 text-tertiary font-label-md text-label-md">
+              <CheckCircle2 class="w-4 h-4 animate-pulse" />
+              <span>Download complete! Replacing files and restarting application...</span>
+            </div>
+          {:else if automationStore.isDownloadingUpdate}
+            <div class="flex flex-col gap-2 p-3 rounded-md bg-surface-container-lowest/80 border border-[var(--card-border)]">
+              <div class="flex items-center justify-between text-caption-sm">
+                <span class="text-on-surface-variant font-medium flex items-center gap-1.5">
+                  <Download class="w-3.5 h-3.5 animate-bounce text-primary" />
+                  Downloading update package in-app...
+                </span>
+                <span class="font-mono font-bold text-primary">
+                  {automationStore.downloadProgress.percentage >= 0
+                    ? `${automationStore.downloadProgress.percentage}%`
+                    : 'Downloading...'}
+                </span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-surface-container-high overflow-hidden">
+                <div
+                  class="h-full bg-gradient-to-r from-primary to-tertiary transition-all duration-300 rounded-full"
+                  style="width: {Math.max(0, Math.min(100, automationStore.downloadProgress.percentage))}%"
+                ></div>
+              </div>
+              <div class="flex items-center justify-between text-[11px] text-outline font-mono">
+                <span>
+                  {formatBytes(automationStore.downloadProgress.downloaded_bytes)}
+                  {#if automationStore.downloadProgress.total_bytes > 0}
+                    / {formatBytes(automationStore.downloadProgress.total_bytes)}
+                  {/if}
+                </span>
+                <span>Automatic file replacement & smooth restart upon completion</span>
+              </div>
+            </div>
+          {/if}
+
+          {#if automationStore.updateErrorMessage}
+            <div class="p-2.5 rounded bg-error/15 border border-error/30 text-error text-caption-sm flex items-center gap-2">
+              <AlertCircle class="w-4 h-4 flex-shrink-0" />
+              <span>{automationStore.updateErrorMessage}</span>
+            </div>
+          {/if}
         </div>
       {/if}
 

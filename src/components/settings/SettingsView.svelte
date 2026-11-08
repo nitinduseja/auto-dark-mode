@@ -286,7 +286,24 @@ Config Path: ${settingsStore.diagnostics.config_path}`;
         {/if}
       </div>
     </div>
-    <div class="flex items-center gap-space-sm">
+    <div class="flex items-center gap-space-sm flex-wrap">
+      {#if automationStore.updateResult?.status === 'update-available'}
+        {#if automationStore.isDownloadingUpdate || automationStore.isRestarting}
+          <div class="h-8 px-space-md rounded bg-primary/15 text-primary text-caption-sm font-medium flex items-center gap-2">
+            <RefreshCw class="w-3.5 h-3.5 animate-spin" />
+            <span>{automationStore.isRestarting ? 'Restarting...' : `Downloading ${automationStore.downloadProgress.percentage}%`}</span>
+          </div>
+        {:else}
+          <button
+            type="button"
+            onclick={() => automationStore.startUpdateDownload()}
+            class="h-8 px-space-md rounded bg-primary text-on-primary hover:bg-primary/90 text-caption-sm font-medium flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
+          >
+            <Download class="w-3.5 h-3.5" />
+            <span>Update to {automationStore.updateResult.latestVersion}</span>
+          </button>
+        {/if}
+      {/if}
       <Button
         variant="secondary"
         size="sm"

@@ -18,6 +18,7 @@
   import StatusBar from './components/layout/StatusBar.svelte';
   import StatusIndicator from './components/ui/StatusIndicator.svelte';
   import IconButton from './components/ui/IconButton.svelte';
+  import UpdateNotification from './components/common/UpdateNotification.svelte';
   import { dashboard } from './stores/dashboard.svelte';
 
   const isTrayView =
@@ -169,5 +170,8 @@
         {/if}
       </main>
     </div>
+
+    <!-- In-App Update Notification Banner & Progress Toast -->
+    <UpdateNotification />
   </div>
 {/if}

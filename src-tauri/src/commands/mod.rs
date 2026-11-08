@@ -8,6 +8,7 @@ pub mod settings;
 pub mod shortcuts;
 pub mod theme;
 pub mod tray;
+pub mod updater;
 
 use serde::{Deserialize, Serialize};
 

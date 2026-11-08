@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.4.0] - 2026-11-08
+
+### Added
+- **Direct In-App Updates**: Download new releases directly within the application without opening an external web browser.
+- **Real-Time Download Progress**: Displays live byte count, total release size, and smooth animated percentage progress during updates.
+- **In-App Notification Banner**: Windows 11 Fluent Acrylic / Mica floating banner in the desktop client alerting when an update is available with single-click "Update Now" and "Release Notes" actions.
+- **Seamless In-Place Replacement & Restart**: Automatically replaces running `autodarkmode.exe` with the downloaded binary via NTFS in-process file renaming and detached supervisor fallback, smoothly restarting the application.
+- **Startup Cleanup**: Automatically detects and purges `.exe.old` backup artifacts on subsequent launches.
+
+---
+
 ## [1.3.0] - 2026-11-08
 
 ### Added
