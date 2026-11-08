@@ -11,6 +11,7 @@
   } from '@lucide/svelte';
   import NavigationItem from '../ui/NavigationItem.svelte';
   import { dashboard } from '../../stores/dashboard.svelte';
+  import { APP_VERSION } from '../../services/updater';
 
   export type AppPage =
     | 'overview'
@@ -29,7 +30,7 @@
 
   let { currentPage = 'overview', onnavigate }: Props = $props();
 
-  let version = $derived(dashboard.state?.app_info.version || 'v1.1.0');
+  let version = $derived(dashboard.state?.app_info.version || `v${APP_VERSION}`);
 
   function handleNavigate(page: AppPage) {
     if (onnavigate) {

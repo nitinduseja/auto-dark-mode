@@ -4,6 +4,11 @@ import {
   saveAutomationConfig,
   getDefaultAutomationConfig,
 } from '../services/tauri';
+import {
+  checkForUpdates,
+  type UpdateCheckResult,
+  APP_VERSION,
+} from '../services/updater';
 
 export class AutomationStore {
   config = $state<AutomationConfig>(getDefaultAutomationConfig());
@@ -13,12 +18,18 @@ export class AutomationStore {
   errorMessage = $state<string | null>(null);
   successMessage = $state<string | null>(null);
   updateStatus = $state<string | null>(null);
+  updateResult = $state<UpdateCheckResult | null>(null);
+  lastCheckedTime = $state<string | null>(null);
 
   async init(): Promise<void> {
     this.isLoading = true;
     this.errorMessage = null;
     try {
       this.config = await fetchAutomationConfig();
+      if (this.config.check_updates && !this.updateResult) {
+        // Run background update check silently at startup if enabled
+        this.checkUpdatesSilently();
+      }
     } catch (err: unknown) {
       this.errorMessage =
         err instanceof Error ? err.message : 'Failed to load automation configuration';
@@ -47,10 +58,28 @@ export class AutomationStore {
 
   async checkUpdates(): Promise<void> {
     this.isCheckingUpdate = true;
-    this.updateStatus = null;
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    this.updateStatus = 'You are on the latest release of AutoDarkMode (v1.1.0)';
-    this.isCheckingUpdate = false;
+    this.errorMessage = null;
+    try {
+      const result = await checkForUpdates(APP_VERSION);
+      this.updateResult = result;
+      this.updateStatus = result.message;
+      this.lastCheckedTime = result.checkedAt;
+    } catch (err: unknown) {
+      this.updateStatus = 'Failed to check for updates';
+    } finally {
+      this.isCheckingUpdate = false;
+    }
+  }
+
+  async checkUpdatesSilently(): Promise<void> {
+    try {
+      const result = await checkForUpdates(APP_VERSION);
+      this.updateResult = result;
+      this.updateStatus = result.message;
+      this.lastCheckedTime = result.checkedAt;
+    } catch {
+      // Fail silently in background
+    }
   }
 }
 

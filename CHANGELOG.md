@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.0] - 2026-11-08
+
+### Added
+- **Real GitHub Releases Update Verification**: Replaced the static update stub with a full asynchronous update checking engine that queries GitHub's public Releases API (`api.github.com/repos/nitinduseja/auto-dark-mode/releases/latest`).
+- **Semantic Version Parser & Comparator**: Integrated semver parsing and comparison to accurately detect newer production releases and compare against the current installation.
+- **Direct Release & Asset Download UI**: Added an interactive release banner in Automation and Settings with direct buttons to view release notes and download release `.exe` binaries directly from GitHub.
+- **Startup Background Update Verification**: When "Automatic Update Verification" is enabled, AutoDarkMode silently queries for updates in the background upon application launch.
+- **Settings & About Integration**: Added real-time "Check for Updates" triggers and status display directly inside the About card on the Settings page.
+- **Dynamic Version Synchronization**: Centralized version referencing so all UI components, status bars, tray flyouts, and diagnostics dynamically reflect the project's semantic release version without hardcoded strings.
+
+### Fixed
+- **System Tray Flyout Dark Mode**: Fixed missing window transparency (`.transparent(true)`), dropped Tailwind `/95` opacity utilities, and applied Win32 DWM immersive dark mode (`DWMWA_USE_IMMERSIVE_DARK_MODE`) to the tray popup HWND so the flyout matches Windows 11 dark theme.
+- **Tray Flyout Theme Re-synchronization**: Added event dispatching and window focus listeners so the tray flyout immediately re-synchronizes theme state when toggled.
+
+---
+
 ## [1.1.0] - 2026-11-06
 
 ### Added

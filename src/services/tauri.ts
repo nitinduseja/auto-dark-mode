@@ -1,3 +1,4 @@
+import { APP_VERSION } from './updater';
 import type { DashboardState, AppInfo, AppConfig } from '../types/dashboard';
 import type {
   DetectedTheme,
@@ -833,7 +834,7 @@ function getFallbackDashboardState(): DashboardState {
     ],
     app_info: {
       app_name: 'AutoDarkMode',
-      version: 'v1.1.0',
+      version: `v${APP_VERSION}`,
       target_platform: 'Windows 11 x64',
       webview_runtime: 'WebView2 Runtime 122.0',
     },

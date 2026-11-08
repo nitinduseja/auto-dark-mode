@@ -14,11 +14,14 @@
     Upload,
     Download,
     ExternalLink,
+    RefreshCw,
   } from '@lucide/svelte';
   import Card from '../ui/Card.svelte';
   import Button from '../ui/Button.svelte';
   import SectionHeading from '../ui/SectionHeading.svelte';
   import { settingsStore } from '../../stores/settings.svelte';
+  import { automationStore } from '../../stores/automation.svelte';
+  import { APP_VERSION } from '../../services/updater';
   import { openExternalUrl } from '../../services/tauri';
 
   let showImportModal = $state(false);
@@ -270,14 +273,29 @@ Config Path: ${settingsStore.diagnostics.config_path}`;
           AutoDarkMode for Windows 11
         </span>
         <span class="font-body-md text-body-md text-on-surface-variant">
-          Version 1.1.0 • Built with Rust + Tauri 2 + Svelte 5
+          Version {APP_VERSION} • Built with Rust + Tauri 2 + Svelte 5
         </span>
-        <span class="font-caption-sm text-caption-sm text-outline pt-0.5">
-          Open source desktop application licensed under MIT.
-        </span>
+        {#if automationStore.updateStatus}
+          <span class="font-caption-sm text-caption-sm {automationStore.updateResult?.status === 'update-available' ? 'text-primary font-medium' : 'text-outline'} pt-0.5">
+            {automationStore.updateStatus}
+          </span>
+        {:else}
+          <span class="font-caption-sm text-caption-sm text-outline pt-0.5">
+            Open source desktop application licensed under MIT.
+          </span>
+        {/if}
       </div>
     </div>
     <div class="flex items-center gap-space-sm">
+      <Button
+        variant="secondary"
+        size="sm"
+        icon={RefreshCw}
+        loading={automationStore.isCheckingUpdate}
+        onclick={() => automationStore.checkUpdates()}
+      >
+        Check for Updates
+      </Button>
       <button
         type="button"
         onclick={() => openExternalUrl('https://github.com/nitinduseja/auto-dark-mode')}

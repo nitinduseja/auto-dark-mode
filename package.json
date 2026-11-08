@@ -1,7 +1,7 @@
 {
   "name": "autodarkmode",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Lightweight, automatic theme switcher for Windows 11",
   "license": "MIT",
   "repository": {

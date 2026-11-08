@@ -15,6 +15,7 @@
   } from '@lucide/svelte';
   import { dashboard } from '../../stores/dashboard.svelte';
   import { themeSelectionStore } from '../../stores/themeSelection.svelte';
+  import { APP_VERSION } from '../../services/updater';
   import {
     openMainWindow,
     closeTrayPopup,
@@ -104,7 +105,7 @@
           AutoDarkMode
         </span>
         <span class="font-caption-sm text-[10px] text-outline leading-tight">
-          {dashboard.state?.app_info?.version || 'v1.1.0'}
+          {dashboard.state?.app_info?.version || `v${APP_VERSION}`}
         </span>
       </div>
     </div>

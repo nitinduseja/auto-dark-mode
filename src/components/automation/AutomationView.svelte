@@ -9,12 +9,15 @@
     Check,
     AlertCircle,
     RefreshCw,
+    ExternalLink,
+    Sparkles,
   } from '@lucide/svelte';
   import Card from '../ui/Card.svelte';
   import Button from '../ui/Button.svelte';
   import Toggle from '../ui/Toggle.svelte';
   import SectionHeading from '../ui/SectionHeading.svelte';
   import { automationStore } from '../../stores/automation.svelte';
+  import { openExternalUrl } from '../../services/tauri';
 
   onMount(() => {
     automationStore.init();
@@ -188,10 +191,54 @@
         />
       </div>
 
+      {#if automationStore.updateResult?.status === 'update-available'}
+        <div
+          class="p-space-md rounded-lg bg-primary/10 border border-primary/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-space-md"
+        >
+          <div class="flex items-start gap-3">
+            <div
+              class="w-9 h-9 rounded-md bg-primary/20 text-primary flex items-center justify-center flex-shrink-0 mt-0.5"
+            >
+              <Sparkles class="w-5 h-5" />
+            </div>
+            <div class="flex flex-col gap-0.5">
+              <span class="font-label-md text-label-md text-on-surface font-semibold">
+                AutoDarkMode {automationStore.updateResult.latestVersion} is available!
+              </span>
+              <span class="font-caption-sm text-caption-sm text-on-surface-variant">
+                You are currently running v{automationStore.updateResult.currentVersion}. {automationStore.updateResult.releaseName ? `Release: ${automationStore.updateResult.releaseName}` : ''}
+              </span>
+            </div>
+          </div>
+          <div class="flex items-center gap-space-sm flex-shrink-0">
+            {#if automationStore.updateResult.releaseUrl}
+              <button
+                type="button"
+                onclick={() => openExternalUrl(automationStore.updateResult!.releaseUrl!)}
+                class="h-8 px-space-md rounded bg-primary text-on-primary hover:bg-primary/90 text-caption-sm font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <span>View Release Notes</span>
+                <ExternalLink class="w-3.5 h-3.5" />
+              </button>
+            {/if}
+            {#if automationStore.updateResult.downloadUrl && automationStore.updateResult.downloadUrl !== automationStore.updateResult.releaseUrl}
+              <button
+                type="button"
+                onclick={() => openExternalUrl(automationStore.updateResult!.downloadUrl!)}
+                class="h-8 px-space-md rounded bg-surface-container-high hover:bg-surface-variant text-on-surface text-caption-sm font-medium flex items-center gap-1.5 transition-colors cursor-pointer border border-[var(--card-border)]"
+              >
+                <span>Download .exe</span>
+                <Download class="w-3.5 h-3.5" />
+              </button>
+            {/if}
+          </div>
+        </div>
+      {/if}
+
       <div class="flex items-center justify-between pt-space-xs border-t border-[var(--card-border)]">
         <div class="flex flex-col gap-0.5">
           <span class="font-caption-sm text-caption-sm text-outline">
-            {automationStore.updateStatus || 'Latest check: Today at startup'}
+            {automationStore.updateStatus || (automationStore.lastCheckedTime ? `Last checked: Today at ${automationStore.lastCheckedTime}` : 'Latest check: Today at startup')}
           </span>
         </div>
         <Button

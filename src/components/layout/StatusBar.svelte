@@ -1,5 +1,6 @@
 <script lang="ts">
   import { dashboard } from '../../stores/dashboard.svelte';
+  import { APP_VERSION } from '../../services/updater';
 
   let appInfo = $derived(dashboard.state?.app_info);
   let isAutomationActive = $derived(dashboard.state?.automation_enabled ?? true);
@@ -24,7 +25,7 @@
   <div class="flex items-center gap-4">
     <span class="text-outline">
       {appInfo?.app_name || 'AutoDarkMode'}
-      {appInfo?.version || 'v1.1.0'} ({appInfo?.target_platform || 'Windows 11 x64'}) • {appInfo?.webview_runtime ||
+      {appInfo?.version || `v${APP_VERSION}`} ({appInfo?.target_platform || 'Windows 11 x64'}) • {appInfo?.webview_runtime ||
         'WebView2 Runtime 122.0'}
     </span>
   </div>
