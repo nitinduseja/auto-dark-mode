@@ -127,6 +127,9 @@ pub fn run() {
             // Start reliable background scheduler daemon
             scheduler::start_scheduler(app.handle().clone());
 
+            // Start global keyboard hotkeys manager
+            windows::hotkeys::start_hotkey_manager(app.handle().clone());
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

@@ -26,6 +26,7 @@
 
   let currentPage = $state<AppPage>('overview');
   let unlistenNavigate: (() => void) | null = null;
+  let unlistenThemeChanged: (() => void) | null = null;
 
   function isValidPage(page: string): page is AppPage {
     return [
@@ -57,8 +58,11 @@
             currentPage = event.payload;
           }
         });
+        unlistenThemeChanged = await listen('theme-changed', () => {
+          dashboard.refresh();
+        });
       } catch (err) {
-        console.warn('Could not attach navigate-page listener:', err);
+        console.warn('Could not attach listeners:', err);
       }
     }
   });
@@ -68,6 +72,10 @@
     if (unlistenNavigate) {
       unlistenNavigate();
       unlistenNavigate = null;
+    }
+    if (unlistenThemeChanged) {
+      unlistenThemeChanged();
+      unlistenThemeChanged = null;
     }
   });
 

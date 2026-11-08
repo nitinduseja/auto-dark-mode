@@ -52,42 +52,41 @@ pub struct ApplySpecificThemeRequest {
     pub path: String,
 }
 
-#[command]
-pub async fn set_theme(app: AppHandle, request: SetThemeRequest) -> OperationResult<DetectedTheme> {
-    info!("Handling set_theme request for target: {:?}", request.theme);
+pub fn apply_theme_internally(app: &AppHandle, target_theme: ThemeMode, trigger: &str) -> Result<DetectedTheme, String> {
+    info!("Executing theme application for target: {:?}, trigger: {}", target_theme, trigger);
 
     // 1. Apply to Windows personalization settings
-    match apply_windows_theme(request.theme) {
+    match apply_windows_theme(target_theme) {
         Ok(detected) => {
             // 2. Update native window DWM dark mode frame across all open windows (main and tray-popup)
-            crate::windows::window::update_all_windows_theme(&app, request.theme == ThemeMode::Dark);
+            crate::windows::window::update_all_windows_theme(app, target_theme == ThemeMode::Dark);
 
             // 3. Persist in configuration and apply Windows .theme file / wallpaper if configured
             let mut updated_config = None;
             if let Some(state) = app.try_state::<AppState>() {
                 let _ = state.update_config(|config| {
-                    config.theme.current = request.theme;
+                    config.theme.current = target_theme;
                     config.last_switched_timestamp = Some(Local::now().timestamp());
-                    config.last_switched_trigger = Some("Manual switch".to_string());
+                    config.last_switched_trigger = Some(trigger.to_string());
                     if config.theme.automatic {
                         config.manual_override = Some(ManualOverride {
-                            target_theme: request.theme,
+                            target_theme,
                             until_timestamp: None, // Respect until next scheduled transition
-                            reason: "Manual switch".to_string(),
+                            reason: trigger.to_string(),
                         });
                     }
                     updated_config = Some(config.clone());
                 });
             } else if let Ok(manager) = ConfigManager::init_default() {
                 if let Ok(mut config) = manager.load_or_create() {
-                    config.theme.current = request.theme;
+                    config.theme.current = target_theme;
                     config.last_switched_timestamp = Some(Local::now().timestamp());
-                    config.last_switched_trigger = Some("Manual switch".to_string());
+                    config.last_switched_trigger = Some(trigger.to_string());
                     if config.theme.automatic {
                         config.manual_override = Some(ManualOverride {
-                            target_theme: request.theme,
+                            target_theme,
                             until_timestamp: None,
-                            reason: "Manual switch".to_string(),
+                            reason: trigger.to_string(),
                         });
                     }
                     let _ = manager.save(&config);
@@ -98,7 +97,7 @@ pub async fn set_theme(app: AppHandle, request: SetThemeRequest) -> OperationRes
             if let Some(config) = updated_config {
                 // If user configured a specific .theme file, apply it
                 if config.theme.use_theme_files {
-                    let theme_file = match request.theme {
+                    let theme_file = match target_theme {
                         ThemeMode::Light => &config.theme.light_theme_path,
                         ThemeMode::Dark => &config.theme.dark_theme_path,
                     };
@@ -109,7 +108,7 @@ pub async fn set_theme(app: AppHandle, request: SetThemeRequest) -> OperationRes
 
                 // Apply Wallpaper if enabled
                 if config.personalization.wallpaper_enabled || config.features.wallpaper {
-                    let wp_path = match request.theme {
+                    let wp_path = match target_theme {
                         ThemeMode::Light => &config.personalization.light_wallpaper_path,
                         ThemeMode::Dark => &config.personalization.dark_wallpaper_path,
                     };
@@ -120,7 +119,7 @@ pub async fn set_theme(app: AppHandle, request: SetThemeRequest) -> OperationRes
 
                 // Apply Accent Color if enabled
                 if config.personalization.sync_accent_color {
-                    let accent = match request.theme {
+                    let accent = match target_theme {
                         ThemeMode::Light => &config.personalization.light_accent_color,
                         ThemeMode::Dark => &config.personalization.dark_accent_color,
                     };
@@ -128,31 +127,31 @@ pub async fn set_theme(app: AppHandle, request: SetThemeRequest) -> OperationRes
                 }
 
                 if config.personalization.sync_cursor {
-                    let _ = apply_cursor_scheme(request.theme == ThemeMode::Dark);
+                    let _ = apply_cursor_scheme(target_theme == ThemeMode::Dark);
                 }
 
                 if config.personalization.sync_sounds {
-                    let _ = apply_sound_scheme(request.theme == ThemeMode::Dark);
+                    let _ = apply_sound_scheme(target_theme == ThemeMode::Dark);
                 }
 
                 if config.personalization.sync_color_filter {
-                    let _ = crate::windows::sync_color_filter(request.theme == ThemeMode::Dark);
+                    let _ = crate::windows::sync_color_filter(target_theme == ThemeMode::Dark);
                 }
 
                 if config.personalization.sync_touch_keyboard {
-                    let _ = crate::windows::sync_touch_keyboard_theme(request.theme == ThemeMode::Dark);
+                    let _ = crate::windows::sync_touch_keyboard_theme(target_theme == ThemeMode::Dark);
                 }
 
                 if config.apps.sync_office {
-                    let _ = crate::windows::sync_office_theme(request.theme == ThemeMode::Dark);
+                    let _ = crate::windows::sync_office_theme(target_theme == ThemeMode::Dark);
                 }
 
                 if config.apps.sync_browsers {
-                    let _ = crate::windows::sync_vscode_theme(request.theme == ThemeMode::Dark);
-                    let _ = crate::windows::sync_windows_terminal_theme(request.theme == ThemeMode::Dark);
+                    let _ = crate::windows::sync_vscode_theme(target_theme == ThemeMode::Dark);
+                    let _ = crate::windows::sync_windows_terminal_theme(target_theme == ThemeMode::Dark);
                 }
 
-                let target_theme_str = match request.theme {
+                let target_theme_str = match target_theme {
                     ThemeMode::Light => "light",
                     ThemeMode::Dark => "dark",
                 };
@@ -163,39 +162,38 @@ pub async fn set_theme(app: AppHandle, request: SetThemeRequest) -> OperationRes
                 }
 
                 if config.automation.notify_on_switch {
-                    crate::windows::show_theme_switch_notification(match request.theme {
+                    crate::windows::show_theme_switch_notification(match target_theme {
                         ThemeMode::Light => "Light",
                         ThemeMode::Dark => "Dark",
                     });
                 }
             }
 
-            OperationResult::ok(detected)
+            Ok(detected)
         }
         Err(e) => {
-            error!("Failed to apply theme {:?}: {}", request.theme, e);
-            OperationResult::err(format!("Windows theme switch error: {}", e))
+            error!("Failed to apply theme {:?}: {}", target_theme, e);
+            Err(format!("Windows theme switch error: {}", e))
         }
     }
 }
 
-#[command]
-pub async fn postpone_switch(app: AppHandle, request: PostponeRequest) -> OperationResult<bool> {
-    info!("Handling postpone_switch command for {} minutes", request.minutes);
+pub fn postpone_internally(app: &AppHandle, minutes: u32) -> Result<bool, String> {
+    info!("Executing internal postpone for {} minutes", minutes);
 
     let detected = match crate::windows::detect_windows_theme() {
         Ok(d) => d,
-        Err(e) => return OperationResult::err(format!("Failed to detect theme: {}", e)),
+        Err(e) => return Err(format!("Failed to detect theme: {}", e)),
     };
 
-    let until = Local::now().timestamp() + (request.minutes as i64 * 60);
+    let until = Local::now().timestamp() + (minutes as i64 * 60);
 
     let res = if let Some(state) = app.try_state::<AppState>() {
         state.update_config(|config| {
             config.manual_override = Some(ManualOverride {
                 target_theme: detected.effective_theme,
                 until_timestamp: Some(until),
-                reason: format!("Postponed for {}m", request.minutes),
+                reason: format!("Postponed for {}m", minutes),
             });
         }).map_err(|e| e.to_string())
     } else if let Ok(manager) = ConfigManager::init_default() {
@@ -204,7 +202,7 @@ pub async fn postpone_switch(app: AppHandle, request: PostponeRequest) -> Operat
                 config.manual_override = Some(ManualOverride {
                     target_theme: detected.effective_theme,
                     until_timestamp: Some(until),
-                    reason: format!("Postponed for {}m", request.minutes),
+                    reason: format!("Postponed for {}m", minutes),
                 });
                 manager.save(&config).map_err(|e| e.to_string())
             }
@@ -216,9 +214,27 @@ pub async fn postpone_switch(app: AppHandle, request: PostponeRequest) -> Operat
 
     match res {
         Ok(_) => {
-            trigger_immediate_evaluation(&app);
-            OperationResult::ok(true)
+            trigger_immediate_evaluation(app);
+            Ok(true)
         }
+        Err(e) => Err(e),
+    }
+}
+
+#[command]
+pub async fn set_theme(app: AppHandle, request: SetThemeRequest) -> OperationResult<DetectedTheme> {
+    info!("Handling set_theme request for target: {:?}", request.theme);
+    match apply_theme_internally(&app, request.theme, "Manual switch") {
+        Ok(detected) => OperationResult::ok(detected),
+        Err(e) => OperationResult::err(e),
+    }
+}
+
+#[command]
+pub async fn postpone_switch(app: AppHandle, request: PostponeRequest) -> OperationResult<bool> {
+    info!("Handling postpone_switch command for {} minutes", request.minutes);
+    match postpone_internally(&app, request.minutes) {
+        Ok(success) => OperationResult::ok(success),
         Err(e) => OperationResult::err(e),
     }
 }

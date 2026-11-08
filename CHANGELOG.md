@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.5.0] - 2026-11-08
+
+### Added
+- **Global Windows Hotkeys Integration**: System-wide global keyboard shortcuts powered by native Win32 `RegisterHotKey` in a dedicated background message loop (`autodarkmode-hotkeys` thread).
+- **Global Shortcut Actions**:
+  - `Ctrl+Alt+T`: Instant toggle between Windows Light and Dark modes from anywhere, even when minimized or inside other applications.
+  - `Ctrl+Alt+L`: Force Light Mode.
+  - `Ctrl+Alt+D`: Force Dark Mode.
+  - `Ctrl+Alt+P`: Postpone upcoming scheduled theme transition by 60 minutes.
+- **Dynamic Hotkey Reloading**: Reconfigures and rebinds OS-level hotkeys in real-time upon configuration updates without requiring application restart.
+- **Interactive Shortcut Recording**: Key capture in Shortcuts view allowing users to press desired modifier combinations to automatically format key bindings.
+- **Duplicate Conflict Guard**: Validation preventing duplicate hotkey assignments across actions.
+- **Real-Time UI Synchronization**: Desktop client listens for `theme-changed` broadcast events from the hotkey worker, updating overview cards, timeline, and status indicator immediately.
+
+---
+
 ## [1.4.0] - 2026-11-08
 
 ### Added

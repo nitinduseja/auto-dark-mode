@@ -1,5 +1,6 @@
 pub mod apps;
 pub mod gaming;
+pub mod hotkeys;
 pub mod installed_themes;
 pub mod notifications;
 pub mod power;

@@ -20,6 +20,51 @@
     shortcutsStore.init();
   });
 
+  function hasDuplicateShortcuts(): boolean {
+    const list = [
+      shortcutsStore.config.toggle_shortcut.trim().toLowerCase(),
+      shortcutsStore.config.force_light_shortcut.trim().toLowerCase(),
+      shortcutsStore.config.force_dark_shortcut.trim().toLowerCase(),
+      shortcutsStore.config.postpone_shortcut.trim().toLowerCase(),
+    ].filter(Boolean);
+    return new Set(list).size !== list.length;
+  }
+
+  function handleKeydown(event: KeyboardEvent, field: 'toggle' | 'force_light' | 'force_dark' | 'postpone') {
+    // Ignore pure modifier presses
+    if (['Control', 'Alt', 'Shift', 'Meta'].includes(event.key)) {
+      return;
+    }
+
+    event.preventDefault();
+
+    const parts: string[] = [];
+    if (event.ctrlKey) parts.push('Ctrl');
+    if (event.altKey) parts.push('Alt');
+    if (event.shiftKey) parts.push('Shift');
+    if (event.metaKey) parts.push('Win');
+
+    let key = event.key;
+    if (key.length === 1) {
+      key = key.toUpperCase();
+    } else if (key.toLowerCase().startsWith('f') && key.length <= 3) {
+      key = key.toUpperCase();
+    }
+
+    if (parts.length === 0) {
+      // Require at least one modifier key for global system safety
+      return;
+    }
+
+    parts.push(key);
+    const combination = parts.join('+');
+
+    if (field === 'toggle') shortcutsStore.config.toggle_shortcut = combination;
+    else if (field === 'force_light') shortcutsStore.config.force_light_shortcut = combination;
+    else if (field === 'force_dark') shortcutsStore.config.force_dark_shortcut = combination;
+    else if (field === 'postpone') shortcutsStore.config.postpone_shortcut = combination;
+  }
+
   function resetShortcuts() {
     shortcutsStore.config.toggle_shortcut = 'Ctrl+Alt+T';
     shortcutsStore.config.force_light_shortcut = 'Ctrl+Alt+L';
@@ -53,12 +98,22 @@
         variant="primary"
         size="md"
         loading={shortcutsStore.isSaving}
+        disabled={hasDuplicateShortcuts()}
         onclick={() => shortcutsStore.save()}
       >
         Save Changes
       </Button>
     </div>
   </div>
+
+  {#if hasDuplicateShortcuts()}
+    <div
+      class="p-space-sm px-space-md rounded bg-secondary/15 border border-secondary/30 text-secondary font-label-md text-label-md flex items-center gap-2"
+    >
+      <AlertCircle class="w-4 h-4 flex-shrink-0" />
+      <span>Duplicate hotkey detected. Please ensure each shortcut combination is unique before saving.</span>
+    </div>
+  {/if}
 
   {#if shortcutsStore.successMessage}
     <div
@@ -124,7 +179,10 @@
           <input
             type="text"
             bind:value={shortcutsStore.config.toggle_shortcut}
-            class="h-8 w-32 px-space-sm rounded bg-surface-container-lowest border border-[var(--card-border)] text-primary-container text-center font-mono font-semibold text-body-md focus:border-primary outline-none shadow-sm"
+            onkeydown={(e) => handleKeydown(e, 'toggle')}
+            placeholder="Ctrl+Alt+T"
+            title="Press desired key combination in this field"
+            class="h-8 w-36 px-space-sm rounded bg-surface-container-lowest border border-[var(--card-border)] text-primary-container text-center font-mono font-semibold text-body-md focus:border-primary outline-none shadow-sm cursor-pointer"
           />
         </Card>
 
@@ -146,7 +204,10 @@
           <input
             type="text"
             bind:value={shortcutsStore.config.force_light_shortcut}
-            class="h-8 w-32 px-space-sm rounded bg-surface-container-lowest border border-[var(--card-border)] text-secondary text-center font-mono font-semibold text-body-md focus:border-primary outline-none shadow-sm"
+            onkeydown={(e) => handleKeydown(e, 'force_light')}
+            placeholder="Ctrl+Alt+L"
+            title="Press desired key combination in this field"
+            class="h-8 w-36 px-space-sm rounded bg-surface-container-lowest border border-[var(--card-border)] text-secondary text-center font-mono font-semibold text-body-md focus:border-primary outline-none shadow-sm cursor-pointer"
           />
         </Card>
 
@@ -168,7 +229,10 @@
           <input
             type="text"
             bind:value={shortcutsStore.config.force_dark_shortcut}
-            class="h-8 w-32 px-space-sm rounded bg-surface-container-lowest border border-[var(--card-border)] text-primary-container text-center font-mono font-semibold text-body-md focus:border-primary outline-none shadow-sm"
+            onkeydown={(e) => handleKeydown(e, 'force_dark')}
+            placeholder="Ctrl+Alt+D"
+            title="Press desired key combination in this field"
+            class="h-8 w-36 px-space-sm rounded bg-surface-container-lowest border border-[var(--card-border)] text-primary-container text-center font-mono font-semibold text-body-md focus:border-primary outline-none shadow-sm cursor-pointer"
           />
         </Card>
 
@@ -190,7 +254,10 @@
           <input
             type="text"
             bind:value={shortcutsStore.config.postpone_shortcut}
-            class="h-8 w-32 px-space-sm rounded bg-surface-container-lowest border border-[var(--card-border)] text-tertiary text-center font-mono font-semibold text-body-md focus:border-primary outline-none shadow-sm"
+            onkeydown={(e) => handleKeydown(e, 'postpone')}
+            placeholder="Ctrl+Alt+P"
+            title="Press desired key combination in this field"
+            class="h-8 w-36 px-space-sm rounded bg-surface-container-lowest border border-[var(--card-border)] text-tertiary text-center font-mono font-semibold text-body-md focus:border-primary outline-none shadow-sm cursor-pointer"
           />
         </Card>
       </div>
