@@ -134,6 +134,40 @@ pub async fn set_theme(app: AppHandle, request: SetThemeRequest) -> OperationRes
                 if config.personalization.sync_sounds {
                     let _ = apply_sound_scheme(request.theme == ThemeMode::Dark);
                 }
+
+                if config.personalization.sync_color_filter {
+                    let _ = crate::windows::sync_color_filter(request.theme == ThemeMode::Dark);
+                }
+
+                if config.personalization.sync_touch_keyboard {
+                    let _ = crate::windows::sync_touch_keyboard_theme(request.theme == ThemeMode::Dark);
+                }
+
+                if config.apps.sync_office {
+                    let _ = crate::windows::sync_office_theme(request.theme == ThemeMode::Dark);
+                }
+
+                if config.apps.sync_browsers {
+                    let _ = crate::windows::sync_vscode_theme(request.theme == ThemeMode::Dark);
+                    let _ = crate::windows::sync_windows_terminal_theme(request.theme == ThemeMode::Dark);
+                }
+
+                let target_theme_str = match request.theme {
+                    ThemeMode::Light => "light",
+                    ThemeMode::Dark => "dark",
+                };
+                for rule in &config.apps.custom_rules {
+                    if rule.enabled && (rule.target_theme == "any" || rule.target_theme == target_theme_str) {
+                        let _ = crate::windows::execute_custom_script(&rule.process_name, "");
+                    }
+                }
+
+                if config.automation.notify_on_switch {
+                    crate::windows::show_theme_switch_notification(match request.theme {
+                        ThemeMode::Light => "Light",
+                        ThemeMode::Dark => "Dark",
+                    });
+                }
             }
 
             OperationResult::ok(detected)

@@ -1,12 +1,18 @@
+pub mod apps;
 pub mod gaming;
 pub mod installed_themes;
+pub mod notifications;
 pub mod power;
 pub mod registry;
+pub mod scripts;
 pub mod startup;
 pub mod theme;
 pub mod wallpaper;
 pub mod window;
 
+pub use apps::{sync_color_filter, sync_office_theme, sync_touch_keyboard_theme, sync_vscode_theme, sync_windows_terminal_theme};
+pub use notifications::show_theme_switch_notification;
+pub use scripts::execute_custom_script;
 pub use gaming::{get_user_idle_seconds, is_fullscreen_active};
 pub use installed_themes::{apply_theme_file, discover_installed_themes, InstalledTheme};
 pub use power::{get_power_status, PowerStatus};

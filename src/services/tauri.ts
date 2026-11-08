@@ -727,6 +727,8 @@ export function getDefaultPersonalizationConfig(): PersonalizationConfig {
     dark_accent_color: '#60CDFF',
     sync_cursor: false,
     sync_sounds: false,
+    sync_color_filter: false,
+    sync_touch_keyboard: true,
   };
 }
 

@@ -12,6 +12,7 @@
     Monitor,
     RefreshCw,
     FolderOpen,
+    Keyboard,
   } from '@lucide/svelte';
   import Card from '../ui/Card.svelte';
   import Button from '../ui/Button.svelte';
@@ -475,6 +476,52 @@
           checked={personalizationStore.config.sync_sounds}
           onchange={(val) => {
             personalizationStore.config.sync_sounds = val;
+            personalizationStore.save();
+          }}
+        />
+      </Card>
+
+      <Card class="flex items-center justify-between">
+        <div class="flex items-center gap-space-md min-w-0 pr-2">
+          <div class="w-9 h-9 rounded bg-surface-container-highest flex items-center justify-center text-secondary flex-shrink-0">
+            <Eye class="w-5 h-5" />
+          </div>
+          <div class="flex flex-col min-w-0">
+            <span class="font-label-md text-label-md text-on-surface font-semibold truncate">
+              Windows Grayscale Color Filter
+            </span>
+            <span class="font-caption-sm text-caption-sm text-on-surface-variant truncate">
+              Automatically activate native Windows grayscale color filter in Dark Mode
+            </span>
+          </div>
+        </div>
+        <Toggle
+          checked={personalizationStore.config.sync_color_filter}
+          onchange={(val) => {
+            personalizationStore.config.sync_color_filter = val;
+            personalizationStore.save();
+          }}
+        />
+      </Card>
+
+      <Card class="flex items-center justify-between">
+        <div class="flex items-center gap-space-md min-w-0 pr-2">
+          <div class="w-9 h-9 rounded bg-surface-container-highest flex items-center justify-center text-secondary flex-shrink-0">
+            <Keyboard class="w-5 h-5" />
+          </div>
+          <div class="flex flex-col min-w-0">
+            <span class="font-label-md text-label-md text-on-surface font-semibold truncate">
+              Touch Keyboard Theme
+            </span>
+            <span class="font-caption-sm text-caption-sm text-on-surface-variant truncate">
+              Synchronize Windows 10/11 on-screen touch keyboard appearance with system theme
+            </span>
+          </div>
+        </div>
+        <Toggle
+          checked={personalizationStore.config.sync_touch_keyboard}
+          onchange={(val) => {
+            personalizationStore.config.sync_touch_keyboard = val;
             personalizationStore.save();
           }}
         />

@@ -217,6 +217,8 @@ pub struct PersonalizationConfig {
     pub dark_accent_color: String,
     pub sync_cursor: bool,
     pub sync_sounds: bool,
+    pub sync_color_filter: bool,
+    pub sync_touch_keyboard: bool,
 }
 
 impl Default for PersonalizationConfig {
@@ -231,6 +233,8 @@ impl Default for PersonalizationConfig {
             dark_accent_color: "#60CDFF".to_string(),
             sync_cursor: false,
             sync_sounds: false,
+            sync_color_filter: false,
+            sync_touch_keyboard: true,
         }
     }
 }

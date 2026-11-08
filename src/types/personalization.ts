@@ -10,4 +10,6 @@ export interface PersonalizationConfig {
   dark_accent_color: string;
   sync_cursor: boolean;
   sync_sounds: boolean;
+  sync_color_filter: boolean;
+  sync_touch_keyboard: boolean;
 }

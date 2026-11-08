@@ -267,6 +267,44 @@ pub fn perform_evaluation_tick(app: &AppHandle) {
         let _ = apply_sound_scheme(expected_theme == ThemeMode::Dark);
     }
 
+    // 1f. Windows Grayscale Filter
+    if config.personalization.sync_color_filter {
+        let _ = crate::windows::sync_color_filter(expected_theme == ThemeMode::Dark);
+    }
+
+    // 1g. Touch Keyboard Theme
+    if config.personalization.sync_touch_keyboard {
+        let _ = crate::windows::sync_touch_keyboard_theme(expected_theme == ThemeMode::Dark);
+    }
+
+    // 1h. Application Themes (Office, VS Code, Windows Terminal)
+    if config.apps.sync_office {
+        let _ = crate::windows::sync_office_theme(expected_theme == ThemeMode::Dark);
+    }
+    if config.apps.sync_browsers {
+        let _ = crate::windows::sync_vscode_theme(expected_theme == ThemeMode::Dark);
+        let _ = crate::windows::sync_windows_terminal_theme(expected_theme == ThemeMode::Dark);
+    }
+
+    // 1i. Custom scripts
+    let target_theme_str = match expected_theme {
+        ThemeMode::Light => "light",
+        ThemeMode::Dark => "dark",
+    };
+    for rule in &config.apps.custom_rules {
+        if rule.enabled && (rule.target_theme == "any" || rule.target_theme == target_theme_str) {
+            let _ = crate::windows::execute_custom_script(&rule.process_name, "");
+        }
+    }
+
+    // 1j. Toast notification if enabled
+    if config.automation.notify_on_switch {
+        crate::windows::show_theme_switch_notification(match expected_theme {
+            ThemeMode::Light => "Light",
+            ThemeMode::Dark => "Dark",
+        });
+    }
+
     // 2. Update native window DWM theme across all open windows (main and tray-popup)
     crate::windows::window::update_all_windows_theme(&app, expected_theme == ThemeMode::Dark);
 
