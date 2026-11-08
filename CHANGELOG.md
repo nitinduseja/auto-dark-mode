@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.0] - 2026-11-08
+
+### Added
+- **Command-Line Interface (CLI)**: Added headless CLI operations to the main executable with parent console attachment (`AttachConsole(ATTACH_PARENT_PROCESS)`) supporting `--dark`, `--light`, `--toggle`, `--status`, `--postpone <minutes>`, `--resume`, `--version`, and `--help`.
+- **Application Theme Synchronization**:
+  - **Microsoft Office (2016/2019/2021/365)**: Synchronizes `HKCU\Software\Microsoft\Office\16.0\Common\UI Theme` between Black (4) and Colorful (0).
+  - **Visual Studio Code**: Atomically updates `%APPDATA%\Code\User\settings.json` (`workbench.colorTheme`).
+  - **Windows Terminal**: Synchronizes packaged and unpackaged `settings.json` (`theme: "dark" | "light"`).
+- **Windows Grayscale Color Filter**: Integrated native `HKCU\Software\Microsoft\ColorFiltering` and DWM refresh, with dedicated UI toggle in Personalization.
+- **Windows Touch Keyboard Theme**: Synchronizes `HKCU\Software\Microsoft\TabletTip\1.7\SelectedTheme` (`DefaultDark` / `DefaultLight`), with dedicated UI toggle in Personalization.
+- **Native Action Center Notifications**: Added asynchronous Windows Toast / Balloon notification dispatch on theme transitions when `notify_on_switch` is enabled.
+- **Custom Scripts Execution Engine**: Added background process execution for `.ps1`, `.bat`, `.cmd`, and `.exe` scripts with `CREATE_NO_WINDOW`.
+
+---
+
 ## [1.2.0] - 2026-11-08
 
 ### Added

@@ -23,7 +23,7 @@ pub fn handle_cli_args(args: &[String]) -> bool {
         "--help" | "-h" | "/?" => {
             #[cfg(target_os = "windows")]
             attach_console();
-            println!("\nAutoDarkMode CLI v1.2.0 - Automatic Windows 11 Appearance Switcher");
+            println!("\nAutoDarkMode CLI v{} - Automatic Windows 11 Appearance Switcher", env!("CARGO_PKG_VERSION"));
             println!("Usage: autodarkmode.exe [OPTIONS]\n");
             println!("Options:");
             println!("  -d, --dark              Switch Windows to Dark Mode");
@@ -40,7 +40,7 @@ pub fn handle_cli_args(args: &[String]) -> bool {
         "--version" | "-v" => {
             #[cfg(target_os = "windows")]
             attach_console();
-            println!("AutoDarkMode v1.2.0");
+            println!("AutoDarkMode v{}", env!("CARGO_PKG_VERSION"));
             true
         }
         "--status" | "-s" => {
