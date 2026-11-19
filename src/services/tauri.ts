@@ -729,6 +729,8 @@ export function getDefaultPersonalizationConfig(): PersonalizationConfig {
     sync_sounds: false,
     sync_color_filter: false,
     sync_touch_keyboard: true,
+    colorize_taskbar: false,
+    colorize_titlebars: false,
   };
 }
 

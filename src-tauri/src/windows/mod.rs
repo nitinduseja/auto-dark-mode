@@ -21,8 +21,9 @@ pub use power::{get_power_status, PowerStatus};
 pub use registry::RegistryError;
 pub use startup::{is_run_at_startup, is_run_minimized_at_startup, set_background_priority, set_run_at_startup};
 pub use theme::{
-    apply_accent_color, apply_cursor_scheme, apply_sound_scheme, apply_windows_theme,
-    apply_windows_theme_independent, detect_windows_theme, DetectedTheme, ThemeError, ThemeMode,
+    apply_accent_color, apply_cursor_scheme, apply_sound_scheme, apply_taskbar_colorization,
+    apply_titlebar_colorization, apply_windows_theme, apply_windows_theme_independent,
+    detect_windows_theme, DetectedTheme, ThemeError, ThemeMode,
 };
 pub use wallpaper::set_desktop_wallpaper;
 pub use window::{apply_mica_to_hwnd, update_all_windows_theme, update_window_theme, MicaStatus};

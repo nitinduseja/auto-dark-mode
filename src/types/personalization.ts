@@ -12,4 +12,6 @@ export interface PersonalizationConfig {
   sync_sounds: boolean;
   sync_color_filter: boolean;
   sync_touch_keyboard: boolean;
+  colorize_taskbar: boolean;
+  colorize_titlebars: boolean;
 }

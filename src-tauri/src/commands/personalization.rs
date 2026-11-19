@@ -43,6 +43,21 @@ pub async fn set_personalization_config(
                 if let Err(e) = manager.save(&config) {
                     return OperationResult::err(format!("Failed saving configuration: {}", e));
                 }
+
+                // Apply Taskbar and Titlebar accent colorization immediately
+                let _ = crate::windows::apply_taskbar_colorization(request.config.colorize_taskbar);
+                let _ = crate::windows::apply_titlebar_colorization(request.config.colorize_titlebars);
+                if request.config.sync_accent_color {
+                    let current_theme = crate::windows::detect_windows_theme()
+                        .map(|t| t.effective_theme)
+                        .unwrap_or(ThemeMode::Dark);
+                    let accent = match current_theme {
+                        ThemeMode::Light => &request.config.light_accent_color,
+                        ThemeMode::Dark => &request.config.dark_accent_color,
+                    };
+                    let _ = crate::windows::apply_accent_color(accent);
+                }
+
                 trigger_immediate_evaluation(&app);
                 OperationResult::ok(request.config)
             }

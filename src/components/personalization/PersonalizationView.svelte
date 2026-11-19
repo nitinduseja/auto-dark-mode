@@ -13,6 +13,7 @@
     RefreshCw,
     FolderOpen,
     Keyboard,
+    AppWindow,
   } from '@lucide/svelte';
   import Card from '../ui/Card.svelte';
   import Button from '../ui/Button.svelte';
@@ -46,6 +47,35 @@
     '#20B2AA',
     '#FF8C00',
   ];
+
+  function getRelativeLuminance(hex: string): number {
+    const clean = hex.replace('#', '');
+    if (clean.length !== 6) return 0.5;
+    const r = parseInt(clean.substring(0, 2), 16) / 255;
+    const g = parseInt(clean.substring(2, 4), 16) / 255;
+    const b = parseInt(clean.substring(4, 6), 16) / 255;
+
+    const toLinear = (c: number) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+    return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+  }
+
+  function getContrastValidation(hex: string, forDark: boolean): { ratio: number; label: string; ok: boolean } {
+    const lum = getRelativeLuminance(hex);
+    const bgLum = forDark ? 0.05 : 0.95;
+    const l1 = Math.max(lum, bgLum);
+    const l2 = Math.min(lum, bgLum);
+    const ratio = (l1 + 0.05) / (l2 + 0.05);
+
+    const rounded = Math.round(ratio * 10) / 10;
+    if (ratio >= 3.0) {
+      return { ratio: rounded, label: `Optimal Contrast (${rounded}:1)`, ok: true };
+    } else {
+      return { ratio: rounded, label: `Low Contrast (${rounded}:1)`, ok: false };
+    }
+  }
+
+  let lightCheck = $derived(getContrastValidation(personalizationStore.config.light_accent_color, false));
+  let darkCheck = $derived(getContrastValidation(personalizationStore.config.dark_accent_color, true));
 </script>
 
 <div class="flex flex-col w-full gap-space-lg max-w-[1400px] mx-auto select-none">
@@ -392,6 +422,17 @@
                 ></button>
               {/each}
             </div>
+            <!-- Contrast Validation Indicator -->
+            <div class="flex items-center gap-1.5 pt-1">
+              <span
+                class="px-2 py-0.5 rounded text-[11px] font-medium flex items-center gap-1.5 {lightCheck.ok
+                  ? 'bg-tertiary/15 text-tertiary border border-tertiary/30'
+                  : 'bg-secondary/15 text-secondary border border-secondary/30'}"
+              >
+                <span class="w-1.5 h-1.5 rounded-full {lightCheck.ok ? 'bg-tertiary' : 'bg-secondary'}"></span>
+                {lightCheck.label}
+              </span>
+            </div>
           </div>
 
           <div class="flex flex-col gap-space-xs">
@@ -421,9 +462,56 @@
                 ></button>
               {/each}
             </div>
+            <!-- Contrast Validation Indicator -->
+            <div class="flex items-center gap-1.5 pt-1">
+              <span
+                class="px-2 py-0.5 rounded text-[11px] font-medium flex items-center gap-1.5 {darkCheck.ok
+                  ? 'bg-tertiary/15 text-tertiary border border-tertiary/30'
+                  : 'bg-secondary/15 text-secondary border border-secondary/30'}"
+              >
+                <span class="w-1.5 h-1.5 rounded-full {darkCheck.ok ? 'bg-tertiary' : 'bg-secondary'}"></span>
+                {darkCheck.label}
+              </span>
+            </div>
           </div>
         </div>
       {/if}
+
+      <div class="flex items-center justify-between pt-space-xs border-t border-[var(--card-border)]">
+        <div class="flex flex-col gap-0.5 max-w-[70%]">
+          <span class="font-label-md text-label-md text-on-surface font-semibold">
+            Show Accent Color on Start and Taskbar
+          </span>
+          <span class="font-caption-sm text-caption-sm text-on-surface-variant">
+            Paints the Windows 11 Taskbar, Start menu, and notification center surface with your chosen accent color.
+          </span>
+        </div>
+        <Toggle
+          checked={personalizationStore.config.colorize_taskbar}
+          onchange={(val) => {
+            personalizationStore.config.colorize_taskbar = val;
+            personalizationStore.save();
+          }}
+        />
+      </div>
+
+      <div class="flex items-center justify-between pt-space-xs border-t border-[var(--card-border)]">
+        <div class="flex flex-col gap-0.5 max-w-[70%]">
+          <span class="font-label-md text-label-md text-on-surface font-semibold">
+            Show Accent Color on Title Bars and Window Borders
+          </span>
+          <span class="font-caption-sm text-caption-sm text-on-surface-variant">
+            Highlights active application window top title bars and borders with your chosen accent color.
+          </span>
+        </div>
+        <Toggle
+          checked={personalizationStore.config.colorize_titlebars}
+          onchange={(val) => {
+            personalizationStore.config.colorize_titlebars = val;
+            personalizationStore.save();
+          }}
+        />
+      </div>
     </Card>
   </div>
 

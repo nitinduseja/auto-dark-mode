@@ -126,6 +126,10 @@ pub fn apply_theme_internally(app: &AppHandle, target_theme: ThemeMode, trigger:
                     let _ = apply_accent_color(accent);
                 }
 
+                // Apply Taskbar and Titlebar accent colorization
+                let _ = crate::windows::apply_taskbar_colorization(config.personalization.colorize_taskbar);
+                let _ = crate::windows::apply_titlebar_colorization(config.personalization.colorize_titlebars);
+
                 if config.personalization.sync_cursor {
                     let _ = apply_cursor_scheme(target_theme == ThemeMode::Dark);
                 }

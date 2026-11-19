@@ -147,6 +147,20 @@ pub fn apply_accent_color(hex_color: &str) -> Result<(), ThemeError> {
     Ok(())
 }
 
+pub fn apply_taskbar_colorization(enabled: bool) -> Result<(), ThemeError> {
+    let val = if enabled { 1 } else { 0 };
+    let _ = write_dword(PERSONALIZE_SUBKEY, "ColorPrevalence", val);
+    let _ = broadcast_theme_change();
+    Ok(())
+}
+
+pub fn apply_titlebar_colorization(enabled: bool) -> Result<(), ThemeError> {
+    let val = if enabled { 1 } else { 0 };
+    let _ = write_dword(r"Software\Microsoft\Windows\DWM", "ColorPrevalence", val);
+    let _ = broadcast_theme_change();
+    Ok(())
+}
+
 pub fn apply_cursor_scheme(is_dark: bool) -> Result<(), ThemeError> {
     #[cfg(target_os = "windows")]
     {

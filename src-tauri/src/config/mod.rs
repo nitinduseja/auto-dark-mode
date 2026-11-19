@@ -219,6 +219,8 @@ pub struct PersonalizationConfig {
     pub sync_sounds: bool,
     pub sync_color_filter: bool,
     pub sync_touch_keyboard: bool,
+    pub colorize_taskbar: bool,
+    pub colorize_titlebars: bool,
 }
 
 impl Default for PersonalizationConfig {
@@ -235,6 +237,8 @@ impl Default for PersonalizationConfig {
             sync_sounds: false,
             sync_color_filter: false,
             sync_touch_keyboard: true,
+            colorize_taskbar: false,
+            colorize_titlebars: false,
         }
     }
 }

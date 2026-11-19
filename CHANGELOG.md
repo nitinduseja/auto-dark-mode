@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.0] - 2026-11-19
+
+### Added
+- **Taskbar, Start & Action Center Colorization**: Added independent toggle to paint the Windows 11 Taskbar, Start menu, and notification center surface with user-defined accent colors via `ColorPrevalence` in `HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize`.
+- **Title Bars & Window Borders Colorization**: Added independent toggle to highlight active application window title bars and borders via `ColorPrevalence` in `HKCU\Software\Microsoft\Windows\DWM`.
+- **Accent Color Contrast Validation**: Added real-time WCAG relative luminance and contrast ratio validation badge (`Optimal Contrast (X:1)` / `Low Contrast (X:1)`) under both Light Mode and Dark Mode accent color pickers.
+- **Instant Personalization Refresh**: Integrated real-time DWM and Windows theme broadcast updates whenever colorization preferences are modified.
+
+---
+
 ## [1.5.0] - 2026-11-08
 
 ### Added
