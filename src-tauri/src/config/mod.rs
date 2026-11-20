@@ -207,10 +207,32 @@ impl Default for AppsConfig {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
-pub struct PersonalizationConfig {
-    pub wallpaper_enabled: bool,
+pub struct MonitorWallpaperConfig {
+    pub monitor_id: String,
+    pub monitor_name: String,
     pub light_wallpaper_path: String,
     pub dark_wallpaper_path: String,
+}
+
+impl Default for MonitorWallpaperConfig {
+    fn default() -> Self {
+        Self {
+            monitor_id: String::new(),
+            monitor_name: String::new(),
+            light_wallpaper_path: String::new(),
+            dark_wallpaper_path: String::new(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct PersonalizationConfig {
+    pub wallpaper_enabled: bool,
+    pub multi_monitor_enabled: bool,
+    pub light_wallpaper_path: String,
+    pub dark_wallpaper_path: String,
+    pub monitor_wallpapers: Vec<MonitorWallpaperConfig>,
     pub wallpaper_fit: String, // "fill", "fit", "stretch", "tile", "center", "span"
     pub sync_accent_color: bool,
     pub light_accent_color: String,
@@ -227,8 +249,10 @@ impl Default for PersonalizationConfig {
     fn default() -> Self {
         Self {
             wallpaper_enabled: false,
+            multi_monitor_enabled: false,
             light_wallpaper_path: String::new(),
             dark_wallpaper_path: String::new(),
+            monitor_wallpapers: Vec::new(),
             wallpaper_fit: "fill".to_string(),
             sync_accent_color: false,
             light_accent_color: "#0078D4".to_string(),

@@ -25,5 +25,8 @@ pub use theme::{
     apply_titlebar_colorization, apply_windows_theme, apply_windows_theme_independent,
     detect_windows_theme, DetectedTheme, ThemeError, ThemeMode,
 };
-pub use wallpaper::set_desktop_wallpaper;
+pub use wallpaper::{
+    get_connected_monitors, set_desktop_wallpaper, set_desktop_wallpaper_for_monitor,
+    ConnectedMonitor,
+};
 pub use window::{apply_mica_to_hwnd, update_all_windows_theme, update_window_theme, MicaStatus};

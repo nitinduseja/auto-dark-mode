@@ -1,9 +1,27 @@
 export type WallpaperFit = 'fill' | 'fit' | 'stretch' | 'tile' | 'center' | 'span';
 
-export interface PersonalizationConfig {
-  wallpaper_enabled: boolean;
+export interface ConnectedMonitor {
+  id: string;
+  index: number;
+  name: string;
+  width: number;
+  height: number;
+  is_primary: boolean;
+}
+
+export interface MonitorWallpaperConfig {
+  monitor_id: string;
+  monitor_name: string;
   light_wallpaper_path: string;
   dark_wallpaper_path: string;
+}
+
+export interface PersonalizationConfig {
+  wallpaper_enabled: boolean;
+  multi_monitor_enabled: boolean;
+  light_wallpaper_path: string;
+  dark_wallpaper_path: string;
+  monitor_wallpapers: MonitorWallpaperConfig[];
   wallpaper_fit: WallpaperFit;
   sync_accent_color: boolean;
   light_accent_color: string;

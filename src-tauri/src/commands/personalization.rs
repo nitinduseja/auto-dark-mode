@@ -5,7 +5,10 @@ use tracing::info;
 use super::OperationResult;
 use crate::config::{ConfigManager, PersonalizationConfig};
 use crate::scheduler::trigger_immediate_evaluation;
-use crate::windows::{set_desktop_wallpaper, ThemeMode};
+use crate::windows::{
+    get_connected_monitors, set_desktop_wallpaper, set_desktop_wallpaper_for_monitor,
+    ConnectedMonitor, ThemeMode,
+};
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct SetPersonalizationConfigRequest {
@@ -15,6 +18,14 @@ pub struct SetPersonalizationConfigRequest {
 #[derive(Debug, Clone, Deserialize)]
 pub struct TestWallpaperRequest {
     pub theme: ThemeMode,
+    pub monitor_id: Option<String>,
+}
+
+#[command]
+pub async fn get_connected_displays() -> OperationResult<Vec<ConnectedMonitor>> {
+    info!("Handling get_connected_displays command");
+    let monitors = get_connected_monitors();
+    OperationResult::ok(monitors)
 }
 
 #[command]
@@ -125,11 +136,30 @@ pub async fn test_apply_wallpaper(request: TestWallpaperRequest) -> OperationRes
                     ThemeMode::Dark => &config.personalization.dark_wallpaper_path,
                 };
 
-                if path.trim().is_empty() {
+                let mut target_path = path.clone();
+                if let Some(ref m_id) = request.monitor_id {
+                    if let Some(mw) = config.personalization.monitor_wallpapers.iter().find(|m| &m.monitor_id == m_id) {
+                        let m_path = match request.theme {
+                            ThemeMode::Light => &mw.light_wallpaper_path,
+                            ThemeMode::Dark => &mw.dark_wallpaper_path,
+                        };
+                        if !m_path.trim().is_empty() {
+                            target_path = m_path.clone();
+                        }
+                    }
+                }
+
+                if target_path.trim().is_empty() {
                     return OperationResult::err("No wallpaper file path is specified for this theme mode".to_string());
                 }
 
-                match set_desktop_wallpaper(path, &config.personalization.wallpaper_fit) {
+                let res = if let Some(ref m_id) = request.monitor_id {
+                    set_desktop_wallpaper_for_monitor(Some(m_id.as_str()), &target_path, &config.personalization.wallpaper_fit)
+                } else {
+                    set_desktop_wallpaper(&target_path, &config.personalization.wallpaper_fit)
+                };
+
+                match res {
                     Ok(_) => OperationResult::ok(true),
                     Err(e) => OperationResult::err(e),
                 }

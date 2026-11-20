@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.7.0] - 2026-11-20
+
+### Added
+- **Multi-Monitor Wallpaper Automation**: Native display detection and per-monitor wallpaper automation powered by the Windows COM `IDesktopWallpaper` interface (`DesktopWallpaper` CLSID).
+- **Connected Display Enumeration**: Automatically detects all connected monitors, reporting device name, resolution (width & height), and primary display status.
+- **Per-Monitor Wallpaper Configuration**: Assign unique Light Mode and Dark Mode desktop backgrounds for each individual display, or mirror across all displays simultaneously.
+- **Dynamic Display Rescan & Test**: Real-time display rescanning from the Personalization view, with instant test apply capabilities for individual monitors or all screens.
+- **Graceful Fallback**: High-performance COM initialization with fallback to Win32 `SystemParametersInfoW` when single-monitor or legacy systems are targeted.
+
+---
+
 ## [1.6.0] - 2026-11-19
 
 ### Added

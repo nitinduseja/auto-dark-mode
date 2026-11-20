@@ -108,12 +108,32 @@ pub fn apply_theme_internally(app: &AppHandle, target_theme: ThemeMode, trigger:
 
                 // Apply Wallpaper if enabled
                 if config.personalization.wallpaper_enabled || config.features.wallpaper {
-                    let wp_path = match target_theme {
+                    let default_wp_path = match target_theme {
                         ThemeMode::Light => &config.personalization.light_wallpaper_path,
                         ThemeMode::Dark => &config.personalization.dark_wallpaper_path,
                     };
-                    if !wp_path.is_empty() {
-                        let _ = set_desktop_wallpaper(wp_path, &config.personalization.wallpaper_fit);
+
+                    if config.personalization.multi_monitor_enabled && !config.personalization.monitor_wallpapers.is_empty() {
+                        for mw in &config.personalization.monitor_wallpapers {
+                            let m_path = match target_theme {
+                                ThemeMode::Light => &mw.light_wallpaper_path,
+                                ThemeMode::Dark => &mw.dark_wallpaper_path,
+                            };
+                            let chosen_path = if !m_path.trim().is_empty() {
+                                m_path
+                            } else {
+                                default_wp_path
+                            };
+                            if !chosen_path.trim().is_empty() {
+                                let _ = crate::windows::set_desktop_wallpaper_for_monitor(
+                                    Some(&mw.monitor_id),
+                                    chosen_path,
+                                    &config.personalization.wallpaper_fit,
+                                );
+                            }
+                        }
+                    } else if !default_wp_path.is_empty() {
+                        let _ = set_desktop_wallpaper(default_wp_path, &config.personalization.wallpaper_fit);
                     }
                 }
 

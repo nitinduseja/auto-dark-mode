@@ -267,87 +267,228 @@
       </div>
 
       {#if personalizationStore.config.wallpaper_enabled}
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-space-lg pt-space-xs border-t border-[var(--card-border)]">
-          <!-- Light Wallpaper -->
-          <div class="flex flex-col gap-space-xs bg-surface-container-low p-space-md rounded">
-            <div class="flex items-center justify-between">
-              <span class="font-caption-sm text-caption-sm text-outline font-semibold uppercase flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-secondary"></span>
-                Light Mode Wallpaper
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                icon={Eye}
-                loading={personalizationStore.isTestingWallpaper}
-                onclick={() => personalizationStore.testWallpaper('light')}
-              >
-                Apply Test
-              </Button>
-            </div>
-            <div class="flex items-center gap-space-xs">
-              <label for="light-wallpaper-input" class="sr-only">Light Mode Wallpaper Path</label>
-              <input
-                id="light-wallpaper-input"
-                type="text"
-                placeholder="C:\Users\Name\Pictures\wallpaper-light.jpg"
-                bind:value={personalizationStore.config.light_wallpaper_path}
-                class="flex-1 h-8 px-space-sm rounded bg-surface-container-lowest border border-[var(--card-border)] text-on-surface text-body-md focus:border-primary outline-none font-mono"
-              />
-              <Button
-                variant="secondary"
-                size="sm"
-                icon={FolderOpen}
-                onclick={() => personalizationStore.browseWallpaper('light')}
-              >
-                Browse...
-              </Button>
-            </div>
-            <span class="font-caption-sm text-caption-sm text-outline">
-              Specify or browse image file (.jpg, .png, .jpeg, .bmp, .webp).
+        <!-- Multi-Monitor Option -->
+        <div class="flex items-center justify-between pt-space-xs border-t border-[var(--card-border)]">
+          <div class="flex flex-col gap-0.5 max-w-[70%]">
+            <span class="font-label-md text-label-md text-on-surface font-semibold flex items-center gap-2">
+              <Monitor class="w-4 h-4 text-primary" />
+              Multi-Monitor Individual Wallpapers
+            </span>
+            <span class="font-caption-sm text-caption-sm text-on-surface-variant">
+              Configure different light and dark wallpapers for each connected display independently.
             </span>
           </div>
-
-          <!-- Dark Wallpaper -->
-          <div class="flex flex-col gap-space-xs bg-surface-container-low p-space-md rounded">
-            <div class="flex items-center justify-between">
-              <span class="font-caption-sm text-caption-sm text-outline font-semibold uppercase flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-primary-container"></span>
-                Dark Mode Wallpaper
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                icon={Eye}
-                loading={personalizationStore.isTestingWallpaper}
-                onclick={() => personalizationStore.testWallpaper('dark')}
-              >
-                Apply Test
-              </Button>
-            </div>
-            <div class="flex items-center gap-space-xs">
-              <label for="dark-wallpaper-input" class="sr-only">Dark Mode Wallpaper Path</label>
-              <input
-                id="dark-wallpaper-input"
-                type="text"
-                placeholder="C:\Users\Name\Pictures\wallpaper-dark.jpg"
-                bind:value={personalizationStore.config.dark_wallpaper_path}
-                class="flex-1 h-8 px-space-sm rounded bg-surface-container-lowest border border-[var(--card-border)] text-on-surface text-body-md focus:border-primary outline-none font-mono"
-              />
-              <Button
-                variant="secondary"
-                size="sm"
-                icon={FolderOpen}
-                onclick={() => personalizationStore.browseWallpaper('dark')}
-              >
-                Browse...
-              </Button>
-            </div>
-            <span class="font-caption-sm text-caption-sm text-outline">
-              Specify or browse image file (.jpg, .png, .jpeg, .bmp, .webp).
-            </span>
-          </div>
+          <Toggle
+            checked={personalizationStore.config.multi_monitor_enabled}
+            onchange={(val) => {
+              personalizationStore.config.multi_monitor_enabled = val;
+              personalizationStore.save();
+            }}
+          />
         </div>
+
+        {#if personalizationStore.config.multi_monitor_enabled}
+          <div class="flex flex-col gap-space-md pt-space-xs border-t border-[var(--card-border)]">
+            <div class="flex items-center justify-between">
+              <span class="font-caption-sm text-caption-sm text-outline font-semibold uppercase tracking-wider">
+                Detected Displays ({personalizationStore.connectedMonitors.length})
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                icon={RefreshCw}
+                loading={personalizationStore.isDetectingMonitors}
+                onclick={() => personalizationStore.loadMonitors()}
+              >
+                Rescan Displays
+              </Button>
+            </div>
+
+            {#if personalizationStore.connectedMonitors.length === 0}
+              <div class="p-4 rounded bg-surface-container-low text-on-surface-variant text-body-sm text-center">
+                No displays detected. Click "Rescan Displays" to scan for attached monitors.
+              </div>
+            {:else}
+              <div class="flex flex-col gap-space-md">
+                {#each personalizationStore.connectedMonitors as monitor (monitor.id)}
+                  {@const monConfig = personalizationStore.getMonitorConfig(monitor.id)}
+                  <div class="flex flex-col gap-space-sm bg-surface-container-low p-space-md rounded border border-[var(--card-border)]">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <Monitor class="w-4 h-4 text-primary" />
+                        <span class="font-label-md text-label-md text-on-surface font-medium">
+                          {monitor.name}
+                        </span>
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-surface-container border border-[var(--card-border)] text-outline font-mono">
+                          {monitor.width}×{monitor.height}
+                        </span>
+                        {#if monitor.is_primary}
+                          <span class="text-xs px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary font-medium">
+                            Primary Display
+                          </span>
+                        {/if}
+                      </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-space-md pt-space-xs">
+                      <!-- Monitor Light Mode Wallpaper -->
+                      <div class="flex flex-col gap-space-xs bg-surface-container-lowest p-space-sm rounded border border-[var(--card-border)]">
+                        <div class="flex items-center justify-between">
+                          <span class="font-caption-sm text-caption-sm text-outline font-semibold uppercase flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-secondary"></span>
+                            Light Wallpaper
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            icon={Eye}
+                            loading={personalizationStore.isTestingWallpaper}
+                            onclick={() => personalizationStore.testWallpaper('light', monitor.id)}
+                          >
+                            Apply Test
+                          </Button>
+                        </div>
+                        <div class="flex items-center gap-space-xs">
+                          <input
+                            type="text"
+                            placeholder="Light wallpaper path..."
+                            bind:value={monConfig.light_wallpaper_path}
+                            class="flex-1 h-8 px-space-sm rounded bg-surface-container-lowest border border-[var(--card-border)] text-on-surface text-body-md focus:border-primary outline-none font-mono"
+                          />
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            icon={FolderOpen}
+                            onclick={() => personalizationStore.browseMonitorWallpaper(monitor.id, 'light')}
+                          >
+                            Browse...
+                          </Button>
+                        </div>
+                      </div>
+
+                      <!-- Monitor Dark Mode Wallpaper -->
+                      <div class="flex flex-col gap-space-xs bg-surface-container-lowest p-space-sm rounded border border-[var(--card-border)]">
+                        <div class="flex items-center justify-between">
+                          <span class="font-caption-sm text-caption-sm text-outline font-semibold uppercase flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-primary-container"></span>
+                            Dark Wallpaper
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            icon={Eye}
+                            loading={personalizationStore.isTestingWallpaper}
+                            onclick={() => personalizationStore.testWallpaper('dark', monitor.id)}
+                          >
+                            Apply Test
+                          </Button>
+                        </div>
+                        <div class="flex items-center gap-space-xs">
+                          <input
+                            type="text"
+                            placeholder="Dark wallpaper path..."
+                            bind:value={monConfig.dark_wallpaper_path}
+                            class="flex-1 h-8 px-space-sm rounded bg-surface-container-lowest border border-[var(--card-border)] text-on-surface text-body-md focus:border-primary outline-none font-mono"
+                          />
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            icon={FolderOpen}
+                            onclick={() => personalizationStore.browseMonitorWallpaper(monitor.id, 'dark')}
+                          >
+                            Browse...
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                {/each}
+              </div>
+            {/if}
+          </div>
+        {:else}
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-space-lg pt-space-xs border-t border-[var(--card-border)]">
+            <!-- Light Wallpaper -->
+            <div class="flex flex-col gap-space-xs bg-surface-container-low p-space-md rounded">
+              <div class="flex items-center justify-between">
+                <span class="font-caption-sm text-caption-sm text-outline font-semibold uppercase flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-secondary"></span>
+                  Light Mode Wallpaper
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  icon={Eye}
+                  loading={personalizationStore.isTestingWallpaper}
+                  onclick={() => personalizationStore.testWallpaper('light')}
+                >
+                  Apply Test
+                </Button>
+              </div>
+              <div class="flex items-center gap-space-xs">
+                <label for="light-wallpaper-input" class="sr-only">Light Mode Wallpaper Path</label>
+                <input
+                  id="light-wallpaper-input"
+                  type="text"
+                  placeholder="C:\Users\Name\Pictures\wallpaper-light.jpg"
+                  bind:value={personalizationStore.config.light_wallpaper_path}
+                  class="flex-1 h-8 px-space-sm rounded bg-surface-container-lowest border border-[var(--card-border)] text-on-surface text-body-md focus:border-primary outline-none font-mono"
+                />
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  icon={FolderOpen}
+                  onclick={() => personalizationStore.browseWallpaper('light')}
+                >
+                  Browse...
+                </Button>
+              </div>
+              <span class="font-caption-sm text-caption-sm text-outline">
+                Specify or browse image file (.jpg, .png, .jpeg, .bmp, .webp).
+              </span>
+            </div>
+
+            <!-- Dark Wallpaper -->
+            <div class="flex flex-col gap-space-xs bg-surface-container-low p-space-md rounded">
+              <div class="flex items-center justify-between">
+                <span class="font-caption-sm text-caption-sm text-outline font-semibold uppercase flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-primary-container"></span>
+                  Dark Mode Wallpaper
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  icon={Eye}
+                  loading={personalizationStore.isTestingWallpaper}
+                  onclick={() => personalizationStore.testWallpaper('dark')}
+                >
+                  Apply Test
+                </Button>
+              </div>
+              <div class="flex items-center gap-space-xs">
+                <label for="dark-wallpaper-input" class="sr-only">Dark Mode Wallpaper Path</label>
+                <input
+                  id="dark-wallpaper-input"
+                  type="text"
+                  placeholder="C:\Users\Name\Pictures\wallpaper-dark.jpg"
+                  bind:value={personalizationStore.config.dark_wallpaper_path}
+                  class="flex-1 h-8 px-space-sm rounded bg-surface-container-lowest border border-[var(--card-border)] text-on-surface text-body-md focus:border-primary outline-none font-mono"
+                />
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  icon={FolderOpen}
+                  onclick={() => personalizationStore.browseWallpaper('dark')}
+                >
+                  Browse...
+                </Button>
+              </div>
+              <span class="font-caption-sm text-caption-sm text-outline">
+                Specify or browse image file (.jpg, .png, .jpeg, .bmp, .webp).
+              </span>
+            </div>
+          </div>
+        {/if}
 
         <div class="flex flex-col gap-space-xs pt-space-xs border-t border-[var(--card-border)]">
           <label for="wallpaper-fit-select" class="font-caption-sm text-caption-sm text-outline font-semibold uppercase">

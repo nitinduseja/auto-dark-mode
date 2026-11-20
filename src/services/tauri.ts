@@ -17,7 +17,7 @@ import type {
   SolarPreviewResult,
 } from '../types/schedule';
 import type { AppsConfig, CustomAppRule } from '../types/apps';
-import type { PersonalizationConfig } from '../types/personalization';
+import type { PersonalizationConfig, ConnectedMonitor, MonitorWallpaperConfig } from '../types/personalization';
 import type { ConditionsConfig, SystemConditionsStatus } from '../types/conditions';
 import type { AutomationConfig } from '../types/automation';
 import type { ShortcutsConfig } from '../types/shortcuts';
@@ -426,11 +426,30 @@ export async function savePersonalizationConfig(
   return config;
 }
 
-export async function testApplyWallpaper(theme: ThemeMode): Promise<boolean> {
+export async function fetchConnectedDisplays(): Promise<ConnectedMonitor[]> {
+  if (isTauriEnvironment()) {
+    const { invoke } = await import('@tauri-apps/api/core');
+    const res = await invoke<OperationResult<ConnectedMonitor[]>>('get_connected_displays');
+    if (res.success && res.data) return res.data;
+    throw new Error(res.error || 'Failed to detect connected displays');
+  }
+  return [
+    {
+      id: 'DISPLAY_1',
+      index: 0,
+      name: 'Display 1 (Primary)',
+      width: 1920,
+      height: 1080,
+      is_primary: true,
+    },
+  ];
+}
+
+export async function testApplyWallpaper(theme: ThemeMode, monitorId?: string): Promise<boolean> {
   if (isTauriEnvironment()) {
     const { invoke } = await import('@tauri-apps/api/core');
     const res = await invoke<OperationResult<boolean>>('test_apply_wallpaper', {
-      request: { theme },
+      request: { theme, monitor_id: monitorId ?? null },
     });
     if (res.success && res.data !== undefined) return res.data;
     throw new Error(res.error || 'Failed to apply test wallpaper');
@@ -719,8 +738,10 @@ export function getDefaultAppsConfig(): AppsConfig {
 export function getDefaultPersonalizationConfig(): PersonalizationConfig {
   return {
     wallpaper_enabled: false,
+    multi_monitor_enabled: false,
     light_wallpaper_path: '',
     dark_wallpaper_path: '',
+    monitor_wallpapers: [],
     wallpaper_fit: 'fill',
     sync_accent_color: false,
     light_accent_color: '#0078D4',
