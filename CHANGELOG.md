@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.8.0] - 2026-11-21
+
+### Added
+- **Ambient Light Sensor (ALS) Auto-Switching**: Integrated Windows Runtime `Windows.Devices.Sensors.LightSensor` (`Devices_Sensors`) to monitor physical ambient illuminance in real-time.
+- **Customizable Lux Thresholds**: User-definable illuminance thresholds for Dark Mode activation (e.g. $\le 30$ Lux) and Light Mode activation (e.g. $\ge 60$ Lux).
+- **Intelligent Hysteresis Deadband Protection**: Automatic anti-flickering buffer between dark and light thresholds preventing rapid theme transitions when room lighting fluctuates.
+- **Live Sensor Diagnostics & Fallback**: Real-time lux meter displaying live illuminance and lighting classification, with graceful automatic fallback to astronomical sunrise/sunset calculations when hardware sensor is absent.
+- **Dedicated ALS Configuration UI**: Interactive controls in the Schedule view with threshold sliders, live diagnostics, and manual sensor rescanning.
+
+---
+
 ## [1.7.0] - 2026-11-20
 
 ### Added

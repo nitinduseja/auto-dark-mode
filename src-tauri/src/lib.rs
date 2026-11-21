@@ -150,6 +150,7 @@ pub fn run() {
             commands::schedule::set_schedule_config,
             commands::schedule::calculate_solar_preview,
             commands::schedule::detect_user_location,
+            commands::schedule::get_ambient_light_status,
             // Apps
             commands::apps::get_apps_config,
             commands::apps::set_apps_config,

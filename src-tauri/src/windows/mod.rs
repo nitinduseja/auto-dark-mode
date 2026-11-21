@@ -6,6 +6,7 @@ pub mod notifications;
 pub mod power;
 pub mod registry;
 pub mod scripts;
+pub mod sensor;
 pub mod startup;
 pub mod theme;
 pub mod updater;
@@ -19,6 +20,7 @@ pub use gaming::{get_user_idle_seconds, is_fullscreen_active};
 pub use installed_themes::{apply_theme_file, discover_installed_themes, InstalledTheme};
 pub use power::{get_power_status, PowerStatus};
 pub use registry::RegistryError;
+pub use sensor::{get_ambient_light_reading, LightSensorStatus};
 pub use startup::{is_run_at_startup, is_run_minimized_at_startup, set_background_priority, set_run_at_startup};
 pub use theme::{
     apply_accent_color, apply_cursor_scheme, apply_sound_scheme, apply_taskbar_colorization,

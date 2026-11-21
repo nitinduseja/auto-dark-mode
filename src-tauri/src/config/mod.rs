@@ -77,6 +77,9 @@ pub struct ScheduleConfig {
     pub idle_delay_minutes: u32,
     pub pause_on_battery: bool,
     pub pause_on_gaming: bool,
+    pub ambient_light_threshold_lux: f32,
+    pub ambient_light_dark_threshold_lux: f32,
+    pub ambient_light_light_threshold_lux: f32,
 }
 
 impl Default for ScheduleConfig {
@@ -97,6 +100,9 @@ impl Default for ScheduleConfig {
             idle_delay_minutes: 0,
             pause_on_battery: false,
             pause_on_gaming: false,
+            ambient_light_threshold_lux: 50.0,
+            ambient_light_dark_threshold_lux: 30.0,
+            ambient_light_light_threshold_lux: 60.0,
         }
     }
 }
@@ -131,6 +137,16 @@ impl ScheduleConfig {
         if self.sunset_offset_minutes < -240 || self.sunset_offset_minutes > 240 {
             return Err(ConfigError::ValidationError(
                 "Sunset offset must be between -240 and +240 minutes".to_string(),
+            ));
+        }
+        if self.ambient_light_dark_threshold_lux < 0.0 || self.ambient_light_light_threshold_lux < 0.0 {
+            return Err(ConfigError::ValidationError(
+                "Ambient light thresholds must be non-negative".to_string(),
+            ));
+        }
+        if self.ambient_light_dark_threshold_lux > self.ambient_light_light_threshold_lux {
+            return Err(ConfigError::ValidationError(
+                "Ambient light dark threshold must be less than or equal to light threshold".to_string(),
             ));
         }
         Ok(())

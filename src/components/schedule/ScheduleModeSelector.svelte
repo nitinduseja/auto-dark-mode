@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Sunrise, Clock, Sparkles } from '@lucide/svelte';
+  import { Sunrise, Clock, Sparkles, SunMedium } from '@lucide/svelte';
   import type { ScheduleType } from '../../types/schedule';
   import { scheduleStore } from '../../stores/schedule.svelte';
 
@@ -33,6 +33,14 @@
       iconColor: 'text-tertiary',
       badge: 'System Sync',
     },
+    {
+      type: 'ambient_light',
+      title: 'Ambient Light Sensor',
+      description: 'Switch automatically based on real-time room lighting lux thresholds',
+      icon: SunMedium,
+      iconColor: 'text-amber-400',
+      badge: 'Hardware Sensor',
+    },
   ];
 
   function selectMode(type: ScheduleType) {
@@ -50,7 +58,7 @@
     </span>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-space-md">
     {#each modes as mode (mode.type)}
       {@const isSelected = scheduleStore.config.type === mode.type}
       {@const Icon = mode.icon}

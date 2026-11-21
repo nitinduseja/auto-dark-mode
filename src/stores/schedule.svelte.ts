@@ -3,12 +3,14 @@ import type {
   ScheduleType,
   SolarPreviewResult,
   CityPreset,
+  LightSensorStatus,
 } from '../types/schedule';
 import {
   fetchScheduleConfig,
   saveScheduleConfig,
   calculateSolarPreview,
   detectUserLocation,
+  fetchAmbientLightStatus,
   getDefaultScheduleConfig,
 } from '../services/tauri';
 import { dashboard } from './dashboard.svelte';
@@ -17,6 +19,8 @@ export class ScheduleStore {
   config = $state<ScheduleConfig>(getDefaultScheduleConfig());
   savedConfig = $state<ScheduleConfig>(getDefaultScheduleConfig());
   preview = $state<SolarPreviewResult | null>(null);
+  ambientLightStatus = $state<LightSensorStatus | null>(null);
+  isQueryingSensor = $state<boolean>(false);
   isLoading = $state<boolean>(true);
   isSaving = $state<boolean>(false);
   isDirty = $state<boolean>(false);
@@ -34,12 +38,23 @@ export class ScheduleStore {
       this.config = { ...loaded };
       this.savedConfig = { ...loaded };
       this.isDirty = false;
-      await this.refreshPreview();
+      await Promise.all([this.refreshPreview(), this.querySensor()]);
     } catch (err: unknown) {
       this.errorMessage =
         err instanceof Error ? err.message : 'Failed to load schedule settings';
     } finally {
       this.isLoading = false;
+    }
+  }
+
+  async querySensor(): Promise<void> {
+    this.isQueryingSensor = true;
+    try {
+      this.ambientLightStatus = await fetchAmbientLightStatus();
+    } catch (err: unknown) {
+      console.warn('Failed to query light sensor:', err);
+    } finally {
+      this.isQueryingSensor = false;
     }
   }
 
@@ -74,6 +89,9 @@ export class ScheduleStore {
   setScheduleType(type: ScheduleType): void {
     this.config.type = type;
     this.checkDirty();
+    if (type === 'ambient_light') {
+      this.querySensor();
+    }
   }
 
   setCityPreset(city: CityPreset): void {

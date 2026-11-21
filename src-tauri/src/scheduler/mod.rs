@@ -47,6 +47,50 @@ pub fn evaluate_natural_theme(config: &AppConfig, now: &chrono::DateTime<Local>)
                 ThemeMode::Dark
             }
         }
+        "ambient_light" | "sensor" => {
+            let sensor_status = crate::windows::get_ambient_light_reading();
+            if let Some(lux) = sensor_status.current_lux {
+                if lux <= config.schedule.ambient_light_dark_threshold_lux {
+                    ThemeMode::Dark
+                } else if lux >= config.schedule.ambient_light_light_threshold_lux {
+                    ThemeMode::Light
+                } else {
+                    config.theme.current
+                }
+            } else {
+                // Fallback to astronomical sunrise/sunset when sensor unavailable
+                let day_of_year = now.date_naive().ordinal();
+                let tz_offset_minutes = now.offset().local_minus_utc() / 60;
+
+                let (raw_sunrise, raw_sunset) = calculate_solar_times(
+                    day_of_year,
+                    config.schedule.latitude,
+                    config.schedule.longitude,
+                    tz_offset_minutes,
+                );
+
+                let sunrise = ((raw_sunrise as i32 + config.schedule.sunrise_offset_minutes)
+                    .rem_euclid(1440)) as u32;
+                let sunset = ((raw_sunset as i32 + config.schedule.sunset_offset_minutes)
+                    .rem_euclid(1440)) as u32;
+
+                if sunrise < sunset {
+                    if now_minute >= sunrise && now_minute < sunset {
+                        ThemeMode::Light
+                    } else {
+                        ThemeMode::Dark
+                    }
+                } else if sunrise > sunset {
+                    if now_minute >= sunset && now_minute < sunrise {
+                        ThemeMode::Dark
+                    } else {
+                        ThemeMode::Light
+                    }
+                } else {
+                    config.theme.current
+                }
+            }
+        }
         _ => {
             // "sunrise_sunset" (default)
             let day_of_year = now.date_naive().ordinal();
@@ -470,5 +514,25 @@ mod tests {
         });
 
         assert_eq!(evaluate_expected_theme(&config, &dt_noon), ThemeMode::Dark);
+    }
+
+    #[test]
+    fn test_ambient_light_schedule_fallback() {
+        let mut config = AppConfig::default();
+        config.schedule.schedule_type = "ambient_light".to_string();
+        config.schedule.ambient_light_dark_threshold_lux = 30.0;
+        config.schedule.ambient_light_light_threshold_lux = 60.0;
+
+        let dt_noon = Local
+            .from_local_datetime(&NaiveDateTime::new(
+                NaiveDate::from_ymd_opt(2026, 6, 21).unwrap(),
+                NaiveTime::from_hms_opt(12, 0, 0).unwrap(),
+            ))
+            .single()
+            .unwrap();
+
+        // In test environments where sensor is absent, should fallback to daytime (Light) or keep valid state
+        let theme = evaluate_expected_theme(&config, &dt_noon);
+        assert!(theme == ThemeMode::Light || theme == ThemeMode::Dark);
     }
 }

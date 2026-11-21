@@ -1,4 +1,10 @@
-export type ScheduleType = 'sunrise_sunset' | 'custom_times' | 'night_light';
+export type ScheduleType = 'sunrise_sunset' | 'custom_times' | 'night_light' | 'ambient_light';
+
+export interface LightSensorStatus {
+  is_supported: boolean;
+  current_lux: number | null;
+  error_message: string | null;
+}
 
 export interface ScheduleConfig {
   type: ScheduleType;
@@ -16,6 +22,9 @@ export interface ScheduleConfig {
   idle_delay_minutes: number;
   pause_on_battery: boolean;
   pause_on_gaming: boolean;
+  ambient_light_threshold_lux: number;
+  ambient_light_dark_threshold_lux: number;
+  ambient_light_light_threshold_lux: number;
 }
 
 export interface SolarPreviewRequest {

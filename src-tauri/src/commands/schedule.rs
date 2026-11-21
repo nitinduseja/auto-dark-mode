@@ -38,6 +38,12 @@ pub struct DetectedLocationResult {
 }
 
 #[command]
+pub async fn get_ambient_light_status() -> OperationResult<crate::windows::LightSensorStatus> {
+    info!("Handling get_ambient_light_status command");
+    OperationResult::ok(crate::windows::get_ambient_light_reading())
+}
+
+#[command]
 pub async fn detect_user_location() -> OperationResult<DetectedLocationResult> {
     info!("Handling detect_user_location command based on local system timezone");
     let now = Local::now();

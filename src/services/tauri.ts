@@ -15,6 +15,7 @@ import type {
   ScheduleConfig,
   SolarPreviewRequest,
   SolarPreviewResult,
+  LightSensorStatus,
 } from '../types/schedule';
 import type { AppsConfig, CustomAppRule } from '../types/apps';
 import type { PersonalizationConfig, ConnectedMonitor, MonitorWallpaperConfig } from '../types/personalization';
@@ -337,6 +338,22 @@ export async function detectUserLocation(): Promise<{
     location_name: 'Local Timezone Location',
     latitude: 40.7128,
     longitude: -74.006,
+  };
+}
+
+export async function fetchAmbientLightStatus(): Promise<LightSensorStatus> {
+  if (isTauriEnvironment()) {
+    const { invoke } = await import('@tauri-apps/api/core');
+    const res = await invoke<OperationResult<LightSensorStatus>>('get_ambient_light_status');
+    if (res.success && res.data) {
+      return res.data;
+    }
+    throw new Error(res.error || 'Failed to query ambient light sensor');
+  }
+  return {
+    is_supported: false,
+    current_lux: null,
+    error_message: 'Ambient light sensor requires Windows 10/11 runtime environment',
   };
 }
 
@@ -706,6 +723,9 @@ export function getDefaultScheduleConfig(): ScheduleConfig {
     idle_delay_minutes: 0,
     pause_on_battery: false,
     pause_on_gaming: false,
+    ambient_light_threshold_lux: 50,
+    ambient_light_dark_threshold_lux: 30,
+    ambient_light_light_threshold_lux: 60,
   };
 }
 

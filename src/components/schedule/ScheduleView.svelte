@@ -12,6 +12,7 @@
   import ScheduleModeSelector from './ScheduleModeSelector.svelte';
   import CustomTimesCard from './CustomTimesCard.svelte';
   import AstronomicalLocationCard from './AstronomicalLocationCard.svelte';
+  import AmbientLightCard from './AmbientLightCard.svelte';
   import ScheduleConditionsCard from './ScheduleConditionsCard.svelte';
   import SchedulePreviewBar from './SchedulePreviewBar.svelte';
   import Button from '../ui/Button.svelte';
@@ -132,6 +133,8 @@
         <span>Night Light schedule is configured in Windows Settings &gt; System &gt; Display &gt; Night light.</span>
       </div>
     </div>
+  {:else if scheduleStore.config.type === 'ambient_light'}
+    <AmbientLightCard />
   {/if}
 
   <!-- 3. Dynamic 24-Hour Horizon Visualizer -->
