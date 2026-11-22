@@ -163,6 +163,9 @@ pub fn run() {
             commands::personalization::test_apply_wallpaper,
             commands::personalization::select_wallpaper_file,
             commands::personalization::get_connected_displays,
+            commands::personalization::get_spotlight_wallpapers,
+            commands::personalization::apply_spotlight_wallpaper,
+            commands::personalization::set_desktop_solid_color_command,
             // Conditions
             commands::conditions::get_conditions_config,
             commands::conditions::set_conditions_config,

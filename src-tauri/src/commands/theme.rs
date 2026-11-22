@@ -8,7 +8,7 @@ use crate::config::{AppState, ConfigManager, ManualOverride, ThemeConfig};
 use crate::scheduler::trigger_immediate_evaluation;
 use crate::windows::{
     apply_accent_color, apply_cursor_scheme, apply_sound_scheme, apply_theme_file,
-    apply_windows_theme, discover_installed_themes, set_desktop_wallpaper, DetectedTheme,
+    apply_windows_theme, discover_installed_themes, DetectedTheme,
     InstalledTheme, ThemeMode,
 };
 
@@ -108,33 +108,7 @@ pub fn apply_theme_internally(app: &AppHandle, target_theme: ThemeMode, trigger:
 
                 // Apply Wallpaper if enabled
                 if config.personalization.wallpaper_enabled || config.features.wallpaper {
-                    let default_wp_path = match target_theme {
-                        ThemeMode::Light => &config.personalization.light_wallpaper_path,
-                        ThemeMode::Dark => &config.personalization.dark_wallpaper_path,
-                    };
-
-                    if config.personalization.multi_monitor_enabled && !config.personalization.monitor_wallpapers.is_empty() {
-                        for mw in &config.personalization.monitor_wallpapers {
-                            let m_path = match target_theme {
-                                ThemeMode::Light => &mw.light_wallpaper_path,
-                                ThemeMode::Dark => &mw.dark_wallpaper_path,
-                            };
-                            let chosen_path = if !m_path.trim().is_empty() {
-                                m_path
-                            } else {
-                                default_wp_path
-                            };
-                            if !chosen_path.trim().is_empty() {
-                                let _ = crate::windows::set_desktop_wallpaper_for_monitor(
-                                    Some(&mw.monitor_id),
-                                    chosen_path,
-                                    &config.personalization.wallpaper_fit,
-                                );
-                            }
-                        }
-                    } else if !default_wp_path.is_empty() {
-                        let _ = set_desktop_wallpaper(default_wp_path, &config.personalization.wallpaper_fit);
-                    }
+                    let _ = crate::windows::apply_configured_wallpaper(&config.personalization, target_theme);
                 }
 
                 // Apply Accent Color if enabled

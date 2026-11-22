@@ -18,7 +18,13 @@ import type {
   LightSensorStatus,
 } from '../types/schedule';
 import type { AppsConfig, CustomAppRule } from '../types/apps';
-import type { PersonalizationConfig, ConnectedMonitor, MonitorWallpaperConfig } from '../types/personalization';
+import type {
+  PersonalizationConfig,
+  ConnectedMonitor,
+  MonitorWallpaperConfig,
+  SpotlightImageInfo,
+  WallpaperMode,
+} from '../types/personalization';
 import type { ConditionsConfig, SystemConditionsStatus } from '../types/conditions';
 import type { AutomationConfig } from '../types/automation';
 import type { ShortcutsConfig } from '../types/shortcuts';
@@ -462,14 +468,64 @@ export async function fetchConnectedDisplays(): Promise<ConnectedMonitor[]> {
   ];
 }
 
-export async function testApplyWallpaper(theme: ThemeMode, monitorId?: string): Promise<boolean> {
+export async function testApplyWallpaper(
+  theme: ThemeMode,
+  monitorId?: string,
+  mode?: WallpaperMode,
+  solidColor?: string
+): Promise<boolean> {
   if (isTauriEnvironment()) {
     const { invoke } = await import('@tauri-apps/api/core');
     const res = await invoke<OperationResult<boolean>>('test_apply_wallpaper', {
-      request: { theme, monitor_id: monitorId ?? null },
+      request: {
+        theme,
+        monitor_id: monitorId ?? null,
+        mode: mode ?? null,
+        solid_color: solidColor ?? null,
+      },
     });
     if (res.success && res.data !== undefined) return res.data;
     throw new Error(res.error || 'Failed to apply test wallpaper');
+  }
+  return true;
+}
+
+export async function fetchSpotlightWallpapers(): Promise<SpotlightImageInfo[]> {
+  if (isTauriEnvironment()) {
+    const { invoke } = await import('@tauri-apps/api/core');
+    const res = await invoke<OperationResult<SpotlightImageInfo[]>>('get_spotlight_wallpapers');
+    if (res.success && res.data) return res.data;
+    throw new Error(res.error || 'Failed to retrieve Windows Spotlight wallpapers');
+  }
+  return [
+    {
+      file_name: 'spotlight_sample.jpg',
+      cached_path: 'C:\\Spotlight\\sample.jpg',
+      width: 1920,
+      height: 1080,
+      modified_timestamp: Date.now() / 1000,
+    },
+  ];
+}
+
+export async function executeApplySpotlightWallpaper(): Promise<string> {
+  if (isTauriEnvironment()) {
+    const { invoke } = await import('@tauri-apps/api/core');
+    const res = await invoke<OperationResult<string>>('apply_spotlight_wallpaper');
+    if (res.success && res.data) return res.data;
+    throw new Error(res.error || 'Failed to apply Windows Spotlight wallpaper');
+  }
+  return 'C:\\Spotlight\\sample.jpg';
+}
+
+export async function executeSetSolidColor(color: string): Promise<boolean> {
+  if (isTauriEnvironment()) {
+    const { invoke } = await import('@tauri-apps/api/core');
+    const res = await invoke<OperationResult<boolean>>('set_desktop_solid_color_command', {
+      request: { color },
+    });
+    if (res.success && res.data !== undefined) return res.data;
+    throw new Error(res.error || 'Failed to set desktop solid color');
   }
   return true;
 }
@@ -758,9 +814,13 @@ export function getDefaultAppsConfig(): AppsConfig {
 export function getDefaultPersonalizationConfig(): PersonalizationConfig {
   return {
     wallpaper_enabled: false,
+    wallpaper_mode: 'picture',
     multi_monitor_enabled: false,
     light_wallpaper_path: '',
     dark_wallpaper_path: '',
+    light_solid_color: '#F3F3F3',
+    dark_solid_color: '#1E1E1E',
+    spotlight_wallpaper_path: '',
     monitor_wallpapers: [],
     wallpaper_fit: 'fill',
     sync_accent_color: false,

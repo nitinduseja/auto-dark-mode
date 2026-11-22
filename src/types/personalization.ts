@@ -1,4 +1,5 @@
 export type WallpaperFit = 'fill' | 'fit' | 'stretch' | 'tile' | 'center' | 'span';
+export type WallpaperMode = 'picture' | 'solid_color' | 'spotlight';
 
 export interface ConnectedMonitor {
   id: string;
@@ -16,11 +17,23 @@ export interface MonitorWallpaperConfig {
   dark_wallpaper_path: string;
 }
 
+export interface SpotlightImageInfo {
+  file_name: string;
+  cached_path: string;
+  width: number;
+  height: number;
+  modified_timestamp: number;
+}
+
 export interface PersonalizationConfig {
   wallpaper_enabled: boolean;
+  wallpaper_mode: WallpaperMode;
   multi_monitor_enabled: boolean;
   light_wallpaper_path: string;
   dark_wallpaper_path: string;
+  light_solid_color: string;
+  dark_solid_color: string;
+  spotlight_wallpaper_path: string;
   monitor_wallpapers: MonitorWallpaperConfig[];
   wallpaper_fit: WallpaperFit;
   sync_accent_color: boolean;

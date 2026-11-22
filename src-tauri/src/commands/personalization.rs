@@ -6,8 +6,10 @@ use super::OperationResult;
 use crate::config::{ConfigManager, PersonalizationConfig};
 use crate::scheduler::trigger_immediate_evaluation;
 use crate::windows::{
-    get_connected_monitors, set_desktop_wallpaper, set_desktop_wallpaper_for_monitor,
-    ConnectedMonitor, ThemeMode,
+    get_connected_monitors, get_spotlight_wallpapers as win_get_spotlight,
+    set_desktop_solid_color as win_set_solid_color, set_desktop_wallpaper,
+    set_desktop_wallpaper_for_monitor, sync_and_apply_spotlight_wallpaper,
+    ConnectedMonitor, SpotlightImageInfo, ThemeMode,
 };
 
 #[derive(Debug, Clone, Deserialize)]
@@ -19,6 +21,40 @@ pub struct SetPersonalizationConfigRequest {
 pub struct TestWallpaperRequest {
     pub theme: ThemeMode,
     pub monitor_id: Option<String>,
+    pub mode: Option<String>,
+    pub solid_color: Option<String>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct SetSolidColorRequest {
+    pub color: String,
+}
+
+#[command]
+pub async fn get_spotlight_wallpapers() -> OperationResult<Vec<SpotlightImageInfo>> {
+    info!("Handling get_spotlight_wallpapers command");
+    match win_get_spotlight() {
+        Ok(images) => OperationResult::ok(images),
+        Err(e) => OperationResult::err(e),
+    }
+}
+
+#[command]
+pub async fn apply_spotlight_wallpaper() -> OperationResult<String> {
+    info!("Handling apply_spotlight_wallpaper command");
+    match sync_and_apply_spotlight_wallpaper() {
+        Ok(path) => OperationResult::ok(path),
+        Err(e) => OperationResult::err(e),
+    }
+}
+
+#[command]
+pub async fn set_desktop_solid_color_command(request: SetSolidColorRequest) -> OperationResult<bool> {
+    info!("Handling set_desktop_solid_color command with color: {}", request.color);
+    match win_set_solid_color(&request.color) {
+        Ok(_) => OperationResult::ok(true),
+        Err(e) => OperationResult::err(e),
+    }
 }
 
 #[command]
@@ -125,43 +161,67 @@ pub async fn select_wallpaper_file() -> OperationResult<Option<String>> {
 #[command]
 pub async fn test_apply_wallpaper(request: TestWallpaperRequest) -> OperationResult<bool> {
     info!(
-        "Handling test_apply_wallpaper for theme: {:?}",
-        request.theme
+        "Handling test_apply_wallpaper for theme: {:?} (mode: {:?})",
+        request.theme, request.mode
     );
     match ConfigManager::init_default() {
         Ok(manager) => match manager.load_or_create() {
             Ok(config) => {
-                let path = match request.theme {
-                    ThemeMode::Light => &config.personalization.light_wallpaper_path,
-                    ThemeMode::Dark => &config.personalization.dark_wallpaper_path,
-                };
+                let mode = request.mode.as_deref().unwrap_or(config.personalization.wallpaper_mode.as_str());
 
-                let mut target_path = path.clone();
-                if let Some(ref m_id) = request.monitor_id {
-                    if let Some(mw) = config.personalization.monitor_wallpapers.iter().find(|m| &m.monitor_id == m_id) {
-                        let m_path = match request.theme {
-                            ThemeMode::Light => &mw.light_wallpaper_path,
-                            ThemeMode::Dark => &mw.dark_wallpaper_path,
-                        };
-                        if !m_path.trim().is_empty() {
-                            target_path = m_path.clone();
+                match mode {
+                    "solid_color" => {
+                        let color = request.solid_color.as_deref().unwrap_or_else(|| {
+                            match request.theme {
+                                ThemeMode::Light => config.personalization.light_solid_color.as_str(),
+                                ThemeMode::Dark => config.personalization.dark_solid_color.as_str(),
+                            }
+                        });
+                        match win_set_solid_color(color) {
+                            Ok(_) => OperationResult::ok(true),
+                            Err(e) => OperationResult::err(e),
                         }
                     }
-                }
+                    "spotlight" => {
+                        match sync_and_apply_spotlight_wallpaper() {
+                            Ok(_) => OperationResult::ok(true),
+                            Err(e) => OperationResult::err(e),
+                        }
+                    }
+                    _ => {
+                        let path = match request.theme {
+                            ThemeMode::Light => &config.personalization.light_wallpaper_path,
+                            ThemeMode::Dark => &config.personalization.dark_wallpaper_path,
+                        };
 
-                if target_path.trim().is_empty() {
-                    return OperationResult::err("No wallpaper file path is specified for this theme mode".to_string());
-                }
+                        let mut target_path = path.clone();
+                        if let Some(ref m_id) = request.monitor_id {
+                            if let Some(mw) = config.personalization.monitor_wallpapers.iter().find(|m| &m.monitor_id == m_id) {
+                                let m_path = match request.theme {
+                                    ThemeMode::Light => &mw.light_wallpaper_path,
+                                    ThemeMode::Dark => &mw.dark_wallpaper_path,
+                                };
+                                if !m_path.trim().is_empty() {
+                                    target_path = m_path.clone();
+                                }
+                            }
+                        }
 
-                let res = if let Some(ref m_id) = request.monitor_id {
-                    set_desktop_wallpaper_for_monitor(Some(m_id.as_str()), &target_path, &config.personalization.wallpaper_fit)
-                } else {
-                    set_desktop_wallpaper(&target_path, &config.personalization.wallpaper_fit)
-                };
+                        if target_path.trim().is_empty() {
+                            return OperationResult::err("No wallpaper file path is specified for this theme mode".to_string());
+                        }
 
-                match res {
-                    Ok(_) => OperationResult::ok(true),
-                    Err(e) => OperationResult::err(e),
+                        let res = if let Some(ref m_id) = request.monitor_id {
+                            set_desktop_wallpaper_for_monitor(Some(m_id.as_str()), &target_path, &config.personalization.wallpaper_fit)
+                        } else {
+                            set_desktop_wallpaper(&target_path, &config.personalization.wallpaper_fit)
+                        };
+
+                        match res {
+                            Ok(_) => OperationResult::ok(true),
+                            Err(e) => OperationResult::err(e),
+                        }
+                    }
                 }
             }
             Err(e) => OperationResult::err(format!("Failed to load configuration: {}", e)),

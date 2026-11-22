@@ -1,4 +1,10 @@
-import type { PersonalizationConfig, ConnectedMonitor, MonitorWallpaperConfig } from '../types/personalization';
+import type {
+  PersonalizationConfig,
+  ConnectedMonitor,
+  MonitorWallpaperConfig,
+  SpotlightImageInfo,
+  WallpaperMode,
+} from '../types/personalization';
 import type { ThemeMode } from '../types/theme';
 import {
   fetchPersonalizationConfig,
@@ -6,16 +12,21 @@ import {
   testApplyWallpaper,
   selectWallpaperFile,
   fetchConnectedDisplays,
+  fetchSpotlightWallpapers,
+  executeApplySpotlightWallpaper,
+  executeSetSolidColor,
   getDefaultPersonalizationConfig,
 } from '../services/tauri';
 
 export class PersonalizationStore {
   config = $state<PersonalizationConfig>(getDefaultPersonalizationConfig());
   connectedMonitors = $state<ConnectedMonitor[]>([]);
+  spotlightImages = $state<SpotlightImageInfo[]>([]);
   isLoading = $state<boolean>(false);
   isSaving = $state<boolean>(false);
   isTestingWallpaper = $state<boolean>(false);
   isDetectingMonitors = $state<boolean>(false);
+  isLoadingSpotlight = $state<boolean>(false);
   errorMessage = $state<string | null>(null);
   successMessage = $state<string | null>(null);
 
@@ -27,13 +38,62 @@ export class PersonalizationStore {
       if (!this.config.monitor_wallpapers) {
         this.config.monitor_wallpapers = [];
       }
-      await this.loadMonitors();
+      await Promise.all([this.loadMonitors(), this.loadSpotlightImages()]);
     } catch (err: unknown) {
       this.errorMessage =
         err instanceof Error ? err.message : 'Failed to load personalization settings';
     } finally {
       this.isLoading = false;
     }
+  }
+
+  async loadSpotlightImages(): Promise<void> {
+    this.isLoadingSpotlight = true;
+    try {
+      this.spotlightImages = await fetchSpotlightWallpapers();
+    } catch (err: unknown) {
+      console.warn('Failed to load spotlight wallpapers:', err);
+    } finally {
+      this.isLoadingSpotlight = false;
+    }
+  }
+
+  async applySpotlight(): Promise<void> {
+    this.isTestingWallpaper = true;
+    this.errorMessage = null;
+    try {
+      const appliedPath = await executeApplySpotlightWallpaper();
+      this.config.spotlight_wallpaper_path = appliedPath;
+      this.successMessage = 'Applied Windows Spotlight wallpaper';
+      setTimeout(() => {
+        this.successMessage = null;
+      }, 3000);
+    } catch (err: unknown) {
+      this.errorMessage = err instanceof Error ? err.message : 'Failed to apply Spotlight wallpaper';
+    } finally {
+      this.isTestingWallpaper = false;
+    }
+  }
+
+  async testSolidColor(theme: ThemeMode, color: string): Promise<void> {
+    this.isTestingWallpaper = true;
+    this.errorMessage = null;
+    try {
+      await executeSetSolidColor(color);
+      this.successMessage = `Applied ${theme} solid color (${color}) successfully`;
+      setTimeout(() => {
+        this.successMessage = null;
+      }, 3000);
+    } catch (err: unknown) {
+      this.errorMessage = err instanceof Error ? err.message : 'Failed to apply solid color';
+    } finally {
+      this.isTestingWallpaper = false;
+    }
+  }
+
+  setWallpaperMode(mode: WallpaperMode): void {
+    this.config.wallpaper_mode = mode;
+    this.save();
   }
 
   async loadMonitors(): Promise<void> {

@@ -8,7 +8,7 @@ use crate::windows::{
     apply_accent_color, apply_cursor_scheme, apply_sound_scheme, apply_theme_file,
     apply_windows_theme, apply_windows_theme_independent, detect_windows_theme,
     get_user_idle_seconds, is_fullscreen_active, power::get_power_status,
-    set_desktop_wallpaper, ThemeMode,
+    ThemeMode,
 };
 
 /// Calculate natural scheduled theme without manual overrides
@@ -354,13 +354,7 @@ pub fn perform_evaluation_tick(app: &AppHandle) {
 
     // 3. Apply Wallpaper if enabled
     if config.personalization.wallpaper_enabled || config.features.wallpaper {
-        let wp_path = match expected_theme {
-            ThemeMode::Light => &config.personalization.light_wallpaper_path,
-            ThemeMode::Dark => &config.personalization.dark_wallpaper_path,
-        };
-        if !wp_path.is_empty() {
-            let _ = set_desktop_wallpaper(wp_path, &config.personalization.wallpaper_fit);
-        }
+        let _ = crate::windows::apply_configured_wallpaper(&config.personalization, expected_theme);
     }
 
     // 4. Update configuration with timestamp and trigger source

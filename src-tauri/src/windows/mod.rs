@@ -28,7 +28,8 @@ pub use theme::{
     detect_windows_theme, DetectedTheme, ThemeError, ThemeMode,
 };
 pub use wallpaper::{
-    get_connected_monitors, set_desktop_wallpaper, set_desktop_wallpaper_for_monitor,
-    ConnectedMonitor,
+    apply_configured_wallpaper, get_connected_monitors, get_spotlight_wallpapers,
+    set_desktop_solid_color, set_desktop_wallpaper, set_desktop_wallpaper_for_monitor,
+    sync_and_apply_spotlight_wallpaper, ConnectedMonitor, SpotlightImageInfo,
 };
 pub use window::{apply_mica_to_hwnd, update_all_windows_theme, update_window_theme, MicaStatus};

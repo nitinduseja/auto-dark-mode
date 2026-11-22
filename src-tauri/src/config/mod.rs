@@ -245,9 +245,13 @@ impl Default for MonitorWallpaperConfig {
 #[serde(default)]
 pub struct PersonalizationConfig {
     pub wallpaper_enabled: bool,
+    pub wallpaper_mode: String, // "picture", "solid_color", "spotlight"
     pub multi_monitor_enabled: bool,
     pub light_wallpaper_path: String,
     pub dark_wallpaper_path: String,
+    pub light_solid_color: String,
+    pub dark_solid_color: String,
+    pub spotlight_wallpaper_path: String,
     pub monitor_wallpapers: Vec<MonitorWallpaperConfig>,
     pub wallpaper_fit: String, // "fill", "fit", "stretch", "tile", "center", "span"
     pub sync_accent_color: bool,
@@ -265,9 +269,13 @@ impl Default for PersonalizationConfig {
     fn default() -> Self {
         Self {
             wallpaper_enabled: false,
+            wallpaper_mode: "picture".to_string(),
             multi_monitor_enabled: false,
             light_wallpaper_path: String::new(),
             dark_wallpaper_path: String::new(),
+            light_solid_color: "#F3F3F3".to_string(),
+            dark_solid_color: "#1E1E1E".to_string(),
+            spotlight_wallpaper_path: String::new(),
             monitor_wallpapers: Vec::new(),
             wallpaper_fit: "fill".to_string(),
             sync_accent_color: false,

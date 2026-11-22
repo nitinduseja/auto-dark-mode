@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.9.0] - 2026-11-23
+
+### Added
+- **Solid Color Wallpaper Automation**: Support for solid background colors for Light Mode and Dark Mode via `IDesktopWallpaper::SetBackgroundColor` and `SetSysColors(COLOR_BACKGROUND)`.
+- **Solid Color Palette & Presets**: Dedicated color pickers with hex code input, quick preset swatches, and real-time preview test actions.
+- **Windows Spotlight Wallpaper Synchronization**: Discovers and harvests daily curated high-definition landscape photography from the Windows Spotlight cache (`%LocalAppData%\Packages\Microsoft.Windows.ContentDeliveryManager_cw5n1h2txyewy\LocalState\Assets`).
+- **Spotlight Gallery & Live Sync**: Thumbnail gallery displaying cached Spotlight resolutions and timestamps with one-click "Sync & Apply Latest" action.
+- **Unified Wallpaper Architecture**: Standardized `apply_configured_wallpaper` pipeline across the background scheduler, manual switcher, and multi-monitor manager.
+
+---
+
 ## [1.8.0] - 2026-11-21
 
 ### Added
