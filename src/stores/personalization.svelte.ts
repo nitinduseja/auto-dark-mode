@@ -4,6 +4,7 @@ import type {
   MonitorWallpaperConfig,
   SpotlightImageInfo,
   WallpaperMode,
+  CursorSchemeInfo,
 } from '../types/personalization';
 import type { ThemeMode } from '../types/theme';
 import {
@@ -15,6 +16,8 @@ import {
   fetchSpotlightWallpapers,
   executeApplySpotlightWallpaper,
   executeSetSolidColor,
+  fetchInstalledCursorSchemes,
+  executeTestApplyCursorScheme,
   getDefaultPersonalizationConfig,
 } from '../services/tauri';
 
@@ -22,11 +25,14 @@ export class PersonalizationStore {
   config = $state<PersonalizationConfig>(getDefaultPersonalizationConfig());
   connectedMonitors = $state<ConnectedMonitor[]>([]);
   spotlightImages = $state<SpotlightImageInfo[]>([]);
+  installedCursorSchemes = $state<CursorSchemeInfo[]>([]);
   isLoading = $state<boolean>(false);
   isSaving = $state<boolean>(false);
   isTestingWallpaper = $state<boolean>(false);
+  isTestingCursor = $state<boolean>(false);
   isDetectingMonitors = $state<boolean>(false);
   isLoadingSpotlight = $state<boolean>(false);
+  isLoadingCursors = $state<boolean>(false);
   errorMessage = $state<string | null>(null);
   successMessage = $state<string | null>(null);
 
@@ -38,7 +44,7 @@ export class PersonalizationStore {
       if (!this.config.monitor_wallpapers) {
         this.config.monitor_wallpapers = [];
       }
-      await Promise.all([this.loadMonitors(), this.loadSpotlightImages()]);
+      await Promise.all([this.loadMonitors(), this.loadSpotlightImages(), this.loadCursorSchemes()]);
     } catch (err: unknown) {
       this.errorMessage =
         err instanceof Error ? err.message : 'Failed to load personalization settings';
@@ -209,6 +215,49 @@ export class PersonalizationStore {
     } catch (err: unknown) {
       this.errorMessage = err instanceof Error ? err.message : 'Failed to select wallpaper file';
     }
+  }
+
+  async loadCursorSchemes(): Promise<void> {
+    this.isLoadingCursors = true;
+    try {
+      this.installedCursorSchemes = await fetchInstalledCursorSchemes();
+      if (!this.config.light_cursor_scheme) {
+        this.config.light_cursor_scheme = 'Windows Aero';
+      }
+      if (!this.config.dark_cursor_scheme) {
+        this.config.dark_cursor_scheme = 'Windows Black';
+      }
+    } catch (err: unknown) {
+      console.warn('Failed to load cursor schemes:', err);
+    } finally {
+      this.isLoadingCursors = false;
+    }
+  }
+
+  async testCursorScheme(schemeName: string): Promise<void> {
+    this.isTestingCursor = true;
+    this.errorMessage = null;
+    try {
+      await executeTestApplyCursorScheme(schemeName);
+      this.successMessage = `Applied cursor scheme "${schemeName}" successfully`;
+      setTimeout(() => {
+        this.successMessage = null;
+      }, 3000);
+    } catch (err: unknown) {
+      this.errorMessage = err instanceof Error ? err.message : 'Failed to apply cursor scheme';
+    } finally {
+      this.isTestingCursor = false;
+    }
+  }
+
+  setLightCursorScheme(scheme: string): void {
+    this.config.light_cursor_scheme = scheme;
+    this.save();
+  }
+
+  setDarkCursorScheme(scheme: string): void {
+    this.config.dark_cursor_scheme = scheme;
+    this.save();
   }
 }
 

@@ -166,6 +166,8 @@ pub fn run() {
             commands::personalization::get_spotlight_wallpapers,
             commands::personalization::apply_spotlight_wallpaper,
             commands::personalization::set_desktop_solid_color_command,
+            commands::personalization::get_installed_cursor_schemes,
+            commands::personalization::test_apply_cursor_scheme,
             // Conditions
             commands::conditions::get_conditions_config,
             commands::conditions::set_conditions_config,

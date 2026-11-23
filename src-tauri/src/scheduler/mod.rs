@@ -5,7 +5,7 @@ use tracing::{info, warn};
 use crate::config::{AppConfig, AppState, ConfigManager};
 use crate::state::{build_dashboard_state, calculate_solar_times};
 use crate::windows::{
-    apply_accent_color, apply_cursor_scheme, apply_sound_scheme, apply_theme_file,
+    apply_accent_color, apply_sound_scheme, apply_theme_file,
     apply_windows_theme, apply_windows_theme_independent, detect_windows_theme,
     get_user_idle_seconds, is_fullscreen_active, power::get_power_status,
     ThemeMode,
@@ -303,7 +303,11 @@ pub fn perform_evaluation_tick(app: &AppHandle) {
 
     // 1d. Adaptive Mouse Cursor
     if config.personalization.sync_cursor {
-        let _ = apply_cursor_scheme(expected_theme == ThemeMode::Dark);
+        let cursor_scheme = match expected_theme {
+            ThemeMode::Light => &config.personalization.light_cursor_scheme,
+            ThemeMode::Dark => &config.personalization.dark_cursor_scheme,
+        };
+        let _ = crate::windows::cursors::apply_cursor_scheme_by_name(cursor_scheme);
     }
 
     // 1e. Sound Scheme

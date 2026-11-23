@@ -1,4 +1,5 @@
 pub mod apps;
+pub mod cursors;
 pub mod gaming;
 pub mod hotkeys;
 pub mod installed_themes;
@@ -14,6 +15,7 @@ pub mod wallpaper;
 pub mod window;
 
 pub use apps::{sync_color_filter, sync_office_theme, sync_touch_keyboard_theme, sync_vscode_theme, sync_windows_terminal_theme};
+pub use cursors::{apply_cursor_scheme_by_name, discover_cursor_schemes, CursorSchemeInfo};
 pub use notifications::show_theme_switch_notification;
 pub use scripts::execute_custom_script;
 pub use gaming::{get_user_idle_seconds, is_fullscreen_active};

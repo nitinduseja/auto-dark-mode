@@ -24,6 +24,7 @@ import type {
   MonitorWallpaperConfig,
   SpotlightImageInfo,
   WallpaperMode,
+  CursorSchemeInfo,
 } from '../types/personalization';
 import type { ConditionsConfig, SystemConditionsStatus } from '../types/conditions';
 import type { AutomationConfig } from '../types/automation';
@@ -542,6 +543,39 @@ export async function selectWallpaperFile(): Promise<string | null> {
   return null;
 }
 
+export async function fetchInstalledCursorSchemes(): Promise<CursorSchemeInfo[]> {
+  if (isTauriEnvironment()) {
+    const { invoke } = await import('@tauri-apps/api/core');
+    const res = await invoke<OperationResult<CursorSchemeInfo[]>>('get_installed_cursor_schemes');
+    if (res.success && res.data) return res.data;
+    throw new Error(res.error || 'Failed to fetch cursor schemes');
+  }
+  return [
+    { name: 'Windows Aero', is_system: true },
+    { name: 'Windows Aero (large)', is_system: true },
+    { name: 'Windows Aero (extra large)', is_system: true },
+    { name: 'Windows Black', is_system: true },
+    { name: 'Windows Black (large)', is_system: true },
+    { name: 'Windows Black (extra large)', is_system: true },
+    { name: 'Windows Inverted', is_system: true },
+    { name: 'Windows Inverted (large)', is_system: true },
+    { name: 'Windows Inverted (extra large)', is_system: true },
+    { name: 'Windows Standard', is_system: true },
+  ];
+}
+
+export async function executeTestApplyCursorScheme(schemeName: string): Promise<boolean> {
+  if (isTauriEnvironment()) {
+    const { invoke } = await import('@tauri-apps/api/core');
+    const res = await invoke<OperationResult<boolean>>('test_apply_cursor_scheme', {
+      request: { scheme_name: schemeName },
+    });
+    if (res.success && res.data !== undefined) return res.data;
+    throw new Error(res.error || 'Failed to apply cursor scheme');
+  }
+  return true;
+}
+
 // ==================== CONDITIONS ====================
 
 export async function fetchConditionsConfig(): Promise<ConditionsConfig> {
@@ -827,6 +861,8 @@ export function getDefaultPersonalizationConfig(): PersonalizationConfig {
     light_accent_color: '#0078D4',
     dark_accent_color: '#60CDFF',
     sync_cursor: false,
+    light_cursor_scheme: 'Windows Aero',
+    dark_cursor_scheme: 'Windows Black',
     sync_sounds: false,
     sync_color_filter: false,
     sync_touch_keyboard: true,

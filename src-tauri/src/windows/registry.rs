@@ -330,6 +330,59 @@ mod win_impl {
 
         Ok(())
     }
+
+    pub fn list_value_names(root: HKEY, subkey: &str) -> Result<Vec<String>, RegistryError> {
+        let subkey_wide = to_wide_null(subkey);
+        let mut hkey = HKEY::default();
+
+        let status = unsafe {
+            RegOpenKeyExW(
+                root,
+                PCWSTR(subkey_wide.as_ptr()),
+                0,
+                KEY_READ,
+                &mut hkey,
+            )
+        };
+
+        if status != ERROR_SUCCESS {
+            return Err(RegistryError::OpenKeyFailed(subkey.to_string(), status.0));
+        }
+
+        let _guard = SafeHKey(hkey);
+        let mut names = Vec::new();
+        let mut index = 0;
+
+        loop {
+            let mut name_buf = [0u16; 256];
+            let mut name_len = name_buf.len() as u32;
+
+            let res = unsafe {
+                windows::Win32::System::Registry::RegEnumValueW(
+                    hkey,
+                    index,
+                    windows::core::PWSTR(name_buf.as_mut_ptr()),
+                    &mut name_len,
+                    None,
+                    None,
+                    None,
+                    None,
+                )
+            };
+
+            if res == ERROR_SUCCESS {
+                let name = String::from_utf16_lossy(&name_buf[..name_len as usize]);
+                if !name.trim().is_empty() {
+                    names.push(name);
+                }
+                index += 1;
+            } else {
+                break;
+            }
+        }
+
+        Ok(names)
+    }
 }
 
 pub fn read_dword(subkey: &str, value_name: &str) -> Result<u32, RegistryError> {
@@ -400,6 +453,30 @@ pub fn delete_value(subkey: &str, value_name: &str) -> Result<(), RegistryError>
     #[cfg(not(target_os = "windows"))]
     {
         let _ = (subkey, value_name);
+        Err(RegistryError::UnsupportedPlatform)
+    }
+}
+
+pub fn list_value_names_hkcu(subkey: &str) -> Result<Vec<String>, RegistryError> {
+    #[cfg(target_os = "windows")]
+    {
+        win_impl::list_value_names(windows::Win32::System::Registry::HKEY_CURRENT_USER, subkey)
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        let _ = subkey;
+        Err(RegistryError::UnsupportedPlatform)
+    }
+}
+
+pub fn list_value_names_hklm(subkey: &str) -> Result<Vec<String>, RegistryError> {
+    #[cfg(target_os = "windows")]
+    {
+        win_impl::list_value_names(windows::Win32::System::Registry::HKEY_LOCAL_MACHINE, subkey)
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        let _ = subkey;
         Err(RegistryError::UnsupportedPlatform)
     }
 }

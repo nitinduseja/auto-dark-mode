@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.10.0] - 2026-11-23
+
+### Added
+- **Custom Mouse Cursor Schemes UI & Preset Manager**: Support for user-selectable cursor schemes for Light Mode and Dark Mode.
+- **Native Registry Enumeration**: Real-time discovery of all installed cursor schemes from both `HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Control Panel\Cursors\Schemes` (system presets) and `HKCU\Control Panel\Cursors\Schemes` (user custom presets).
+- **17-Role Cursor Synchronization**: Dynamic updating of all 17 standard Windows cursor roles (`Arrow`, `Help`, `AppStarting`, `Wait`, `Crosshair`, `IBeam`, `NWPen`, `No`, `SizeNS`, `SizeWE`, `SizeNWSE`, `SizeNESW`, `SizeAll`, `UpArrow`, `Hand`, `Pin`, `Person`) in `HKCU\Control Panel\Cursors`.
+- **Live System Cursor Broadcasting**: Instant live cursor reload across all desktop windows via `SystemParametersInfoW(SPI_SETCURSORS, ...)` and `WM_SETTINGCHANGE` broadcast without requiring system logout or reboot.
+- **Interactive Cursor Scheme Preview & Rescan**: Dedicated dropdown selectors, system vs custom scheme badge indicators, and immediate "Apply Test" preview functionality in the Personalization view.
+
+---
+
 ## [1.9.0] - 2026-11-23
 
 ### Added

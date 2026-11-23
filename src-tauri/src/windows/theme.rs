@@ -162,33 +162,12 @@ pub fn apply_titlebar_colorization(enabled: bool) -> Result<(), ThemeError> {
 }
 
 pub fn apply_cursor_scheme(is_dark: bool) -> Result<(), ThemeError> {
-    #[cfg(target_os = "windows")]
-    {
-        use windows::Win32::UI::WindowsAndMessaging::{
-            SystemParametersInfoW, SPIF_SENDCHANGE, SPIF_UPDATEINIFILE, SPI_SETCURSORS,
-        };
-        use super::registry::write_string;
-
-        let scheme_name = if is_dark {
-            "Windows Black"
-        } else {
-            "Windows Default"
-        };
-
-        let _ = write_string(r"Control Panel\Cursors", "", scheme_name);
-        unsafe {
-            let _ = SystemParametersInfoW(
-                SPI_SETCURSORS,
-                0,
-                None,
-                SPIF_UPDATEINIFILE | SPIF_SENDCHANGE,
-            );
-        }
-    }
-    #[cfg(not(target_os = "windows"))]
-    {
-        let _ = is_dark;
-    }
+    let scheme_name = if is_dark {
+        "Windows Black"
+    } else {
+        "Windows Aero"
+    };
+    let _ = crate::windows::cursors::apply_cursor_scheme_by_name(scheme_name);
     Ok(())
 }
 

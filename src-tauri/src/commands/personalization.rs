@@ -6,10 +6,10 @@ use super::OperationResult;
 use crate::config::{ConfigManager, PersonalizationConfig};
 use crate::scheduler::trigger_immediate_evaluation;
 use crate::windows::{
-    get_connected_monitors, get_spotlight_wallpapers as win_get_spotlight,
-    set_desktop_solid_color as win_set_solid_color, set_desktop_wallpaper,
-    set_desktop_wallpaper_for_monitor, sync_and_apply_spotlight_wallpaper,
-    ConnectedMonitor, SpotlightImageInfo, ThemeMode,
+    apply_cursor_scheme_by_name, discover_cursor_schemes, get_connected_monitors,
+    get_spotlight_wallpapers as win_get_spotlight, set_desktop_solid_color as win_set_solid_color,
+    set_desktop_wallpaper, set_desktop_wallpaper_for_monitor, sync_and_apply_spotlight_wallpaper,
+    ConnectedMonitor, CursorSchemeInfo, SpotlightImageInfo, ThemeMode,
 };
 
 #[derive(Debug, Clone, Deserialize)]
@@ -52,6 +52,27 @@ pub async fn apply_spotlight_wallpaper() -> OperationResult<String> {
 pub async fn set_desktop_solid_color_command(request: SetSolidColorRequest) -> OperationResult<bool> {
     info!("Handling set_desktop_solid_color command with color: {}", request.color);
     match win_set_solid_color(&request.color) {
+        Ok(_) => OperationResult::ok(true),
+        Err(e) => OperationResult::err(e),
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct TestCursorSchemeRequest {
+    pub scheme_name: String,
+}
+
+#[command]
+pub async fn get_installed_cursor_schemes() -> OperationResult<Vec<CursorSchemeInfo>> {
+    info!("Handling get_installed_cursor_schemes command");
+    let schemes = discover_cursor_schemes();
+    OperationResult::ok(schemes)
+}
+
+#[command]
+pub async fn test_apply_cursor_scheme(request: TestCursorSchemeRequest) -> OperationResult<bool> {
+    info!("Handling test_apply_cursor_scheme command for scheme: {}", request.scheme_name);
+    match apply_cursor_scheme_by_name(&request.scheme_name) {
         Ok(_) => OperationResult::ok(true),
         Err(e) => OperationResult::err(e),
     }

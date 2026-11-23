@@ -25,6 +25,12 @@ export interface SpotlightImageInfo {
   modified_timestamp: number;
 }
 
+export interface CursorSchemeInfo {
+  name: string;
+  is_system: boolean;
+  sample_arrow_path?: string;
+}
+
 export interface PersonalizationConfig {
   wallpaper_enabled: boolean;
   wallpaper_mode: WallpaperMode;
@@ -40,6 +46,8 @@ export interface PersonalizationConfig {
   light_accent_color: string;
   dark_accent_color: string;
   sync_cursor: boolean;
+  light_cursor_scheme: string;
+  dark_cursor_scheme: string;
   sync_sounds: boolean;
   sync_color_filter: boolean;
   sync_touch_keyboard: boolean;

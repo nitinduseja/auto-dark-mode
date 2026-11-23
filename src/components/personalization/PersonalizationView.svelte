@@ -900,27 +900,123 @@
       icon={Sparkles}
     />
     <div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
-      <Card class="flex items-center justify-between">
-        <div class="flex items-center gap-space-md min-w-0 pr-2">
-          <div class="w-9 h-9 rounded bg-surface-container-highest flex items-center justify-center text-primary-container flex-shrink-0">
-            <MousePointer class="w-5 h-5" />
+      <!-- Adaptive Mouse Pointer Schemes -->
+      <Card class="flex flex-col gap-space-md {personalizationStore.config.sync_cursor ? 'md:col-span-2' : ''}">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-space-md min-w-0 pr-2">
+            <div class="w-9 h-9 rounded bg-surface-container-highest flex items-center justify-center text-primary-container flex-shrink-0">
+              <MousePointer class="w-5 h-5" />
+            </div>
+            <div class="flex flex-col min-w-0">
+              <span class="font-label-md text-label-md text-on-surface font-semibold truncate">
+                Adaptive Mouse Pointer Schemes
+              </span>
+              <span class="font-caption-sm text-caption-sm text-on-surface-variant truncate">
+                Automatically switch cursor schemes between light and dark environments
+              </span>
+            </div>
           </div>
-          <div class="flex flex-col min-w-0">
-            <span class="font-label-md text-label-md text-on-surface font-semibold truncate">
-              Adaptive Mouse Pointer
-            </span>
-            <span class="font-caption-sm text-caption-sm text-on-surface-variant truncate">
-              Switch cursor between Windows Light (Black outline) and Dark (Inverted)
-            </span>
+          <div class="flex items-center gap-2">
+            {#if personalizationStore.config.sync_cursor}
+              <Button
+                variant="ghost"
+                size="sm"
+                icon={RefreshCw}
+                loading={personalizationStore.isLoadingCursors}
+                onclick={() => personalizationStore.loadCursorSchemes()}
+              >
+                Rescan Schemes
+              </Button>
+            {/if}
+            <Toggle
+              checked={personalizationStore.config.sync_cursor}
+              onchange={(val) => {
+                personalizationStore.config.sync_cursor = val;
+                personalizationStore.save();
+              }}
+            />
           </div>
         </div>
-        <Toggle
-          checked={personalizationStore.config.sync_cursor}
-          onchange={(val) => {
-            personalizationStore.config.sync_cursor = val;
-            personalizationStore.save();
-          }}
-        />
+
+        {#if personalizationStore.config.sync_cursor}
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-space-lg pt-space-xs border-t border-[var(--card-border)]">
+            <!-- Light Mode Cursor Scheme Selector -->
+            <div class="flex flex-col gap-space-xs bg-surface-container-low p-space-md rounded">
+              <div class="flex items-center justify-between">
+                <span class="font-caption-sm text-caption-sm text-outline font-semibold uppercase flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-secondary"></span>
+                  Light Mode Cursor Scheme
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  icon={Eye}
+                  loading={personalizationStore.isTestingCursor}
+                  onclick={() =>
+                    personalizationStore.testCursorScheme(
+                      personalizationStore.config.light_cursor_scheme
+                    )}
+                >
+                  Apply Test
+                </Button>
+              </div>
+              <label for="light-cursor-select" class="sr-only">Select Light Mode Cursor Scheme</label>
+              <select
+                id="light-cursor-select"
+                bind:value={personalizationStore.config.light_cursor_scheme}
+                onchange={(e) => personalizationStore.setLightCursorScheme(e.currentTarget.value)}
+                class="h-9 px-space-sm rounded bg-surface-container-lowest border border-[var(--card-border)] text-on-surface text-body-md focus:border-primary outline-none cursor-pointer"
+              >
+                {#each personalizationStore.installedCursorSchemes as scheme}
+                  <option value={scheme.name}>
+                    {scheme.name} {scheme.is_system ? '(System Preset)' : '(Custom Scheme)'}
+                  </option>
+                {/each}
+              </select>
+              <span class="font-caption-sm text-caption-sm text-outline truncate">
+                Selected: {personalizationStore.config.light_cursor_scheme || 'Windows Aero'}
+              </span>
+            </div>
+
+            <!-- Dark Mode Cursor Scheme Selector -->
+            <div class="flex flex-col gap-space-xs bg-surface-container-low p-space-md rounded">
+              <div class="flex items-center justify-between">
+                <span class="font-caption-sm text-caption-sm text-outline font-semibold uppercase flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-primary-container"></span>
+                  Dark Mode Cursor Scheme
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  icon={Eye}
+                  loading={personalizationStore.isTestingCursor}
+                  onclick={() =>
+                    personalizationStore.testCursorScheme(
+                      personalizationStore.config.dark_cursor_scheme
+                    )}
+                >
+                  Apply Test
+                </Button>
+              </div>
+              <label for="dark-cursor-select" class="sr-only">Select Dark Mode Cursor Scheme</label>
+              <select
+                id="dark-cursor-select"
+                bind:value={personalizationStore.config.dark_cursor_scheme}
+                onchange={(e) => personalizationStore.setDarkCursorScheme(e.currentTarget.value)}
+                class="h-9 px-space-sm rounded bg-surface-container-lowest border border-[var(--card-border)] text-on-surface text-body-md focus:border-primary outline-none cursor-pointer"
+              >
+                {#each personalizationStore.installedCursorSchemes as scheme}
+                  <option value={scheme.name}>
+                    {scheme.name} {scheme.is_system ? '(System Preset)' : '(Custom Scheme)'}
+                  </option>
+                {/each}
+              </select>
+              <span class="font-caption-sm text-caption-sm text-outline truncate">
+                Selected: {personalizationStore.config.dark_cursor_scheme || 'Windows Black'}
+              </span>
+            </div>
+          </div>
+        {/if}
       </Card>
 
       <Card class="flex items-center justify-between">
